@@ -6,9 +6,12 @@ version := "1.x-SNAPSHOT"
 
 scalaVersion := "2.12.0"
 
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0")
+crossScalaVersions := Seq("2.11.8", "2.12.0")
 
-libraryDependencies += "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.6"
+libraryDependencies ++= Seq(
+	"org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+	"org.scalatest" %% "scalatest" % "3.0.1" % "test"
+)
 
 licenses += "Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")
 
@@ -33,7 +36,7 @@ pomExtra := <developers>
 	</developer>
 </developers>
 
-pomIncludeRepository := { x => false }
+pomIncludeRepository := { _ => false }
 
 publishTo := {
 	val nexus = "https://oss.sonatype.org/"
