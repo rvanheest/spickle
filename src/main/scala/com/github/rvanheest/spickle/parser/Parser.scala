@@ -18,9 +18,7 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 			}
 		})
 	}
-	def <|>[B >: A](other: => Parser[S, B]): Parser[S, B] = {
-		this.orElse(other)
-	}
+	def <|>[B >: A](other: => Parser[S, B]): Parser[S, B] = this.orElse(other)
 
 	def map[B](f: A => B): Parser[S, B] = {
 		Parser(st => {
@@ -31,14 +29,6 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 		})
 	}
 
-	def doOnNext[Ignore](f: A => Ignore): Parser[S, A] = {
-		map(a => { f(a); a })
-	}
-
-	def as[B](b: => B): Parser[S, B] = {
-		map(_ => b)
-	}
-
 	def flatMap[B](f: A => Parser[S, B]): Parser[S, B] = {
 		Parser(st => {
 			parse(st) match {
@@ -47,9 +37,7 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 			}
 		})
 	}
-	def >>=[B](f: A => Parser[S, B]): Parser[S, B] = {
-		this.flatMap(f)
-	}
+	def >>=[B](f: A => Parser[S, B]): Parser[S, B] = this.flatMap(f)
 
 	def transform[B](f: (A, S) => (Try[B], S)): Parser[S, B] = {
 		Parser(st => {
@@ -60,48 +48,35 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 		})
 	}
 
-	def >>[B](other: => Parser[S, B]): Parser[S, B] = {
-		this >>= (_ => other)
-	}
+	def >>[B](other: => Parser[S, B]): Parser[S, B] = this >>= (_ => other)
 
-	def <<[B](other: => Parser[S, B]): Parser[S, A] = {
-		this >>= (x => other >> Parser.from(x))
-	}
+	def <<[B](other: => Parser[S, B]): Parser[S, A] = this >>= (x => other >> Parser.from(x))
 
-	def filter(predicate: A => Boolean): Parser[S, A] = satisfy(predicate)
 	def satisfy(predicate: A => Boolean): Parser[S, A] = {
 		this >>= (x => if (predicate(x)) Parser.from(x) else Parser.empty)
 	}
+	def filter(predicate: A => Boolean): Parser[S, A] = this.satisfy(predicate)
 
-	def noneOf(as: List[A]): Parser[S, A] = {
-		satisfy(!as.contains(_))
-	}
+  // TODO improve error message
+	def noneOf(as: List[A]): Parser[S, A] = this.satisfy(!as.contains(_))
 
-	def maybe: Parser[S, Option[A]] = {
-		map(Option(_)) <|> Parser.from(Option.empty)
-	}
+	def maybe: Parser[S, Option[A]] = this.map(Option(_)) <|> Parser.from(Option.empty)
 
-	def many: Parser[S, List[A]] = {
-		atLeastOnce <|> Parser.from(Nil)
-	}
+	def many: Parser[S, List[A]] = this.atLeastOnce <|> Parser.from(Nil)
 
 	def atLeastOnce: Parser[S, List[A]] = {
 		for {
 			x <- this
-			xs <- many
+			xs <- this.many
 		} yield x :: xs
 	}
 
-	def takeUntil(predicate: A => Boolean): Parser[S, List[A]] = {
-		takeWhile(!predicate(_))
-	}
+	def takeUntil(predicate: A => Boolean): Parser[S, List[A]] = this.takeWhile(!predicate(_))
 
-	def takeWhile(predicate: A => Boolean): Parser[S, List[A]] = {
-		satisfy(predicate).many
-	}
+	def takeWhile(predicate: A => Boolean): Parser[S, List[A]] = this.satisfy(predicate).many
 
 	def separatedBy[Sep](sep: Parser[S, Sep]): Parser[S, List[A]] = {
-		separatedBy1(sep) <|> Parser.from(Nil)
+    this.separatedBy1(sep) <|> Parser.from(Nil)
 	}
 
 	def separatedBy1[Sep](sep: Parser[S, Sep]): Parser[S, List[A]] = {
@@ -111,7 +86,7 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 		} yield x :: xs
 	}
 
-	def skipMany: Parser[S, Unit] = this >> skipMany <|> Parser.from(())
+	def skipMany: Parser[S, Unit] = this >> this.skipMany <|> Parser.from(())
 }
 
 object Parser {
