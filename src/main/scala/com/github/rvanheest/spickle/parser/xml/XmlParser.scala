@@ -14,7 +14,7 @@ object XmlParser {
 		Parser(ns => ns
 			.headOption
 			.map(head => (Try(head), ns.tail))
-			.getOrElse((Failure(new NoSuchElementException("you're trying to parse a node in an empty xml Node")), Seq.empty)))
+			.getOrElse((Failure(new NoSuchElementException("can't parse an empty node sequence")), Seq.empty)))
 	}
 
 	def nodeWithName(name: String): XmlParser[Node] = {
