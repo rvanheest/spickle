@@ -66,15 +66,4 @@ object XmlParser {
 			.satisfy(xs => xs != null && xs.nonEmpty)
 			.map(_.head.text)
 	}
-
-	def debugAndFail(pos: String = ""): XmlParser[Nothing] = {
-		Parser(xs => sys.error(s"you hit a debug statement at $pos: $xs"))
-	}
-
-	def debugAndContinue(pos: String = ""): XmlParser[Unit] = {
-		Parser(xs => {
-			println(s"you hit a debug statement at $pos: $xs")
-			(Success(()), xs)
-		})
-	}
 }

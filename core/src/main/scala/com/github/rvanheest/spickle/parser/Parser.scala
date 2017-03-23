@@ -1,6 +1,8 @@
 package com.github.rvanheest.spickle.parser
 
-import scala.util.{Failure, Success, Try}
+import com.github.rvanheest.spickle.parser.xml.XmlParser.XmlParser
+
+import scala.util.{ Failure, Success, Try }
 
 class Parser[S, A](parse: S => (Try[A], S)) {
 
@@ -101,5 +103,16 @@ object Parser {
 	def withException[T, S, A](s: S)(constructor: S => A): Parser[T, A] = {
 		try { Parser.from(constructor(s)) }
 		catch { case e: Throwable => Parser.failure(e) }
+	}
+
+	def debugAndFail(pos: String = ""): XmlParser[Nothing] = {
+		Parser(xs => sys.error(s"you hit a debug statement at $pos: $xs"))
+	}
+
+	def debugAndContinue(pos: String = ""): XmlParser[Unit] = {
+		Parser(xs => {
+			println(s"you hit a debug statement at $pos: $xs")
+			(Success(()), xs)
+		})
 	}
 }
