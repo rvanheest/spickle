@@ -3,8 +3,8 @@ package com.github.rvanheest.spickle.pickle
 import com.github.rvanheest.spickle.parser.Parser
 
 import scala.language.higherKinds
-import scala.reflect.{ClassTag, classTag}
-import scala.util.{Failure, Try}
+import scala.reflect.{ ClassTag, classTag }
+import scala.util.{ Failure, Try }
 
 // TODO improve error messages
 abstract class Pickle[A, State](val pickle: (A, State) => Try[State],

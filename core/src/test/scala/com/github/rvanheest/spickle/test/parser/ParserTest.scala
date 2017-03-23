@@ -1,10 +1,10 @@
 package com.github.rvanheest.spickle.test.parser
 
 import com.github.rvanheest.spickle.parser.Parser
-import org.scalatest.{FlatSpec, Inside, Matchers}
+import org.scalatest.{ FlatSpec, Inside, Matchers }
 
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 class ParserTest extends FlatSpec with Matchers with Inside {
 

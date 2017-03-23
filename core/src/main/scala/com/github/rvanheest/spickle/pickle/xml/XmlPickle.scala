@@ -1,7 +1,7 @@
 package com.github.rvanheest.spickle.pickle.xml
 
 import com.github.rvanheest.spickle.parser.xml.XmlParser
-import com.github.rvanheest.spickle.pickle.{Pickle, PickleBuilder}
+import com.github.rvanheest.spickle.pickle.{ Pickle, PickleBuilder }
 
 import scala.language.reflectiveCalls
 import scala.util.Try

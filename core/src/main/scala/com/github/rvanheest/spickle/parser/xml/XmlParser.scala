@@ -3,8 +3,8 @@ package com.github.rvanheest.spickle.parser.xml
 import com.github.rvanheest.spickle.parser.Parser
 import com.github.rvanheest.spickle.parser.Parser.withException
 
-import scala.util.{Failure, Success, Try}
-import scala.xml.{NamespaceBinding, Node}
+import scala.util.{ Failure, Success, Try }
+import scala.xml.{ NamespaceBinding, Node }
 
 object XmlParser {
 

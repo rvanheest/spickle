@@ -1,7 +1,7 @@
 package com.github.rvanheest.spickle.pickle.string
 
 import com.github.rvanheest.spickle.parser.string.StringParser
-import com.github.rvanheest.spickle.pickle.{Pickle, PickleBuilder}
+import com.github.rvanheest.spickle.pickle.{ Pickle, PickleBuilder }
 
 import scala.language.postfixOps
 import scala.util.Try
