@@ -37,8 +37,15 @@ lazy val publishSettings = Seq(
 	publishMavenStyle := true
 )
 
+lazy val root = project.in(file("."))
+	.settings(spickleSettings,
+		name := "root",
+		publishArtifact := false
+	)
+	.aggregate(spickleLib)
+
 lazy val spickleLib = Project(
-	id = "core",
+	id = "spickle",
 	base = file("core"),
 	settings = spickleSettings ++ publishSettings ++ Seq(
 		name := "spickle",
@@ -50,12 +57,13 @@ lazy val spickleLib = Project(
 )
 
 lazy val spickleExample = Project(
-	id = "example",
+	id = "spickle-example",
 	base = file("example"),
 	settings = spickleSettings ++ Seq(
 		name := "spickle-example",
 		libraryDependencies ++= Seq(
 			"org.scala-lang.modules" %% "scala-xml" % "1.0.6"
-		)
+		),
+		publishArtifact := false
 	)
 ).dependsOn(spickleLib)
