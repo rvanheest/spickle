@@ -2,7 +2,6 @@ import sbt.Keys.{ crossScalaVersions, homepage, publishMavenStyle, scmInfo }
 
 lazy val spickleSettings = Seq(
 	organization := "com.github.rvanheest",
-	name := "spickle",
 	version := "1.x-SNAPSHOT",
 	scalaVersion := "2.12.0",
 	crossScalaVersions := Seq("2.11.8", "2.12.0"),
@@ -38,20 +37,25 @@ lazy val publishSettings = Seq(
 	publishMavenStyle := true
 )
 
-lazy val spickleProject = Project(
-	id = "spickle",
-	base = file("."),
-	settings = spickleSettings ++ publishSettings,
-	aggregate = Seq(spickleLib)
-)
-
 lazy val spickleLib = Project(
 	id = "core",
 	base = file("core"),
 	settings = spickleSettings ++ publishSettings ++ Seq(
+		name := "spickle",
 		libraryDependencies ++= Seq(
 			"org.scala-lang.modules" %% "scala-xml" % "1.0.6",
 			"org.scalatest" %% "scalatest" % "3.0.1" % "test"
 		)
 	)
 )
+
+lazy val spickleExample = Project(
+	id = "example",
+	base = file("example"),
+	settings = spickleSettings ++ Seq(
+		name := "spickle-example",
+		libraryDependencies ++= Seq(
+			"org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+		)
+	)
+).dependsOn(spickleLib)
