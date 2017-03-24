@@ -4,7 +4,8 @@ import com.github.rvanheest.spickle.parser.xml.XmlParser._
 
 import scala.xml.{ NamespaceBinding, TopScope }
 
-trait PersonParser { this: Person =>
+trait PersonParser {
+  this: Person =>
 
   def parseNumber(name: String): XmlParser[Number] = {
     for {

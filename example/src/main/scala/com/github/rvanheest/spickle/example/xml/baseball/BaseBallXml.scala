@@ -1,11 +1,11 @@
 package com.github.rvanheest.spickle.example.xml.baseball
 
-import scala.xml.Elem
+import scala.xml.{ Elem, Node, Utility }
 
 trait BaseBallXml {
 
   // @formatter:off
-  val xml: Elem = <SEASON YEAR="1998">
+  private val season: Elem = <SEASON YEAR="1998">
     <LEAGUE NAME="National League">
       <DIVISION NAME="East">
         <TEAM CITY="Atlanta" NAME="Braves">
@@ -64,4 +64,6 @@ trait BaseBallXml {
     </LEAGUE>
   </SEASON>
   // @formatter:on
+
+  val xml: Node = Utility.trim(season)
 }

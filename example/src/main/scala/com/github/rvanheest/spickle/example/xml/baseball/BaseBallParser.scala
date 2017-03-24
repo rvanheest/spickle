@@ -23,8 +23,8 @@ trait BaseBallParser {
       city <- attributeId("CITY")
       team <- branchNode(name) {
         for {
-          person <- parsePlayer("PLAYER").many
-        } yield Team(n, city, person)
+          players <- parsePlayer("PLAYER").many
+        } yield Team(n, city, players)
       }
     } yield team
   }

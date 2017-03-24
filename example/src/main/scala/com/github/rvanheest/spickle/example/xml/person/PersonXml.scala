@@ -1,11 +1,11 @@
 package com.github.rvanheest.spickle.example.xml.person
 
-import scala.xml.Elem
+import scala.xml.{ Elem, Node, Utility }
 
 trait PersonXml {
 
   // @formatter:off
-  val xml1: Elem = <person age="24" xlink:age="24">
+  private val person1: Elem = <person age="24" xlink:age="24">
     <name>Richard van Heest</name>
     <address>
       <street>Prins Bernhardlaan</street>
@@ -16,7 +16,7 @@ trait PersonXml {
     <mail>richard.v.heest@gmail.com</mail>
   </person>
 
-  val xml2: Elem = <person age="24" xlink:age="24">
+  private val person2: Elem = <person age="24" xlink:age="24">
     <name>Richard van Heest</name>
     <address>
       <street>Prins Bernhardlaan</street>
@@ -27,7 +27,7 @@ trait PersonXml {
     <mail>richard.v.heest@gmail.com</mail>
   </person>
 
-  val xml3: Elem = <person age="24" xlink:age="24">
+  private val person3: Elem = <person age="24" xlink:age="24">
     <name>Richard van Heest</name>
     <address>
       <freepost-number>12345</freepost-number>
@@ -36,4 +36,8 @@ trait PersonXml {
     </address>
   </person>
   // @formatter:on
+
+  val xml1: Node = Utility.trim(person1)
+  val xml2: Node = Utility.trim(person2)
+  val xml3: Node = Utility.trim(person3)
 }

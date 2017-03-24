@@ -39,7 +39,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 			unpickle = this.parse.satisfy(predicate).run)
 	}
 
-	def noneOf(as: List[A]): Repr[A] = satisfy(!as.contains(_))
+	def noneOf(as: Seq[A]): Repr[A] = satisfy(!as.contains(_))
 
 	def maybe: Repr[Option[A]] = {
 		builder[Option[A]](
@@ -47,38 +47,38 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 			unpickle = this.parse.maybe.run)
 	}
 
-	def many: Repr[List[A]] = {
-		builder[List[A]](
+	def many: Repr[Seq[A]] = {
+		builder[Seq[A]](
 			pickle = (as, state) => as.foldRight(Try(state))((a, triedState) => triedState.flatMap(this.pickle(a, _))),
 			unpickle = this.parse.many.run)
 	}
 
-	def atLeastOnce: Repr[List[A]] = {
+	def atLeastOnce: Repr[Seq[A]] = {
 		for {
-			x <- this.seq[List[A]](_.head)
-			xs <- many.seq[List[A]](_.tail)
-		} yield x :: xs
+			x <- this.seq[Seq[A]](_.head)
+			xs <- many.seq[Seq[A]](_.tail)
+		} yield x +: xs
 	}
 
-	def takeUntil(predicate: A => Boolean): Repr[List[A]] = takeWhile(!predicate(_))
+	def takeUntil(predicate: A => Boolean): Repr[Seq[A]] = takeWhile(!predicate(_))
 
-	def takeWhile(predicate: A => Boolean): Repr[List[A]] = {
-		builder[List[A]](
+	def takeWhile(predicate: A => Boolean): Repr[Seq[A]] = {
+		builder[Seq[A]](
 			pickle = this.satisfy(predicate).many.pickle,
 			unpickle = this.parse.takeWhile(predicate).run)
 	}
 
-	def separatedBy[Sep](separator: Sep)(sep: Repr[Sep]): Repr[List[A]] = {
-		builder[List[A]](
+	def separatedBy[Sep](separator: Sep)(sep: Repr[Sep]): Repr[Seq[A]] = {
+		builder[Seq[A]](
 			pickle = (as, state) => this.separatedBy1(separator)(sep).pickle(as, state) orElse Try(state),
 			unpickle = this.parse.separatedBy(sep.parse).run)
 	}
 
-	def separatedBy1[Sep](separator: Sep)(sep: Repr[Sep]): Repr[List[A]] = {
+	def separatedBy1[Sep](separator: Sep)(sep: Repr[Sep]): Repr[Seq[A]] = {
 		for {
-			x <- this.seq[List[A]](_.head)
-			xs <- sep.seq[A](_ => separator).flatMap(_ => this).many.seq[List[A]](_.tail)
-		} yield x :: xs
+			x <- this.seq[Seq[A]](_.head)
+			xs <- sep.seq[A](_ => separator).flatMap(_ => this).many.seq[Seq[A]](_.tail)
+		} yield x +: xs
 	}
 }
 

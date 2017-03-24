@@ -60,32 +60,32 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 	def filter(predicate: A => Boolean): Parser[S, A] = this.satisfy(predicate)
 
   // TODO improve error message
-	def noneOf(as: List[A]): Parser[S, A] = this.satisfy(!as.contains(_))
+	def noneOf(as: Seq[A]): Parser[S, A] = this.satisfy(!as.contains(_))
 
 	def maybe: Parser[S, Option[A]] = this.map(Option(_)) <|> Parser.from(Option.empty)
 
-	def many: Parser[S, List[A]] = this.atLeastOnce <|> Parser.from(Nil)
+	def many: Parser[S, Seq[A]] = this.atLeastOnce <|> Parser.from(Nil)
 
-	def atLeastOnce: Parser[S, List[A]] = {
+	def atLeastOnce: Parser[S, Seq[A]] = {
 		for {
 			x <- this
 			xs <- this.many
-		} yield x :: xs
+		} yield x +: xs
 	}
 
-	def takeUntil(predicate: A => Boolean): Parser[S, List[A]] = this.takeWhile(!predicate(_))
+	def takeUntil(predicate: A => Boolean): Parser[S, Seq[A]] = this.takeWhile(!predicate(_))
 
-	def takeWhile(predicate: A => Boolean): Parser[S, List[A]] = this.satisfy(predicate).many
+	def takeWhile(predicate: A => Boolean): Parser[S, Seq[A]] = this.satisfy(predicate).many
 
-	def separatedBy[Sep](sep: Parser[S, Sep]): Parser[S, List[A]] = {
+	def separatedBy[Sep](sep: Parser[S, Sep]): Parser[S, Seq[A]] = {
     this.separatedBy1(sep) <|> Parser.from(Nil)
 	}
 
-	def separatedBy1[Sep](sep: Parser[S, Sep]): Parser[S, List[A]] = {
+	def separatedBy1[Sep](sep: Parser[S, Sep]): Parser[S, Seq[A]] = {
 		for {
 			x <- this
 			xs <- (sep >> this).many
-		} yield x :: xs
+		} yield x +: xs
 	}
 
 	def skipMany: Parser[S, Unit] = this >> this.skipMany <|> Parser.from(())

@@ -15,8 +15,28 @@ case class XmlPickle[A](override val pickle: (A, Seq[Node]) => Try[Seq[Node]],
 
 	protected[this] implicit def builder[X]: PickleBuilder[X, Seq[Node], XmlPickle[X]] = XmlPickle.xmlPickleBuilder
 
+	def toByte(implicit ev: A =:= String, ev2: String =:= A): Repr[Byte] = {
+		this.seq[Byte](_.toString).map(ev(_).toByte)
+	}
+
+	def toShort(implicit ev: A =:= String, ev2: String =:= A): Repr[Short] = {
+		this.seq[Short](_.toString).map(ev(_).toShort)
+	}
+
 	def toInt(implicit ev: A =:= String, ev2: String =:= A): Repr[Int] = {
 		this.seq[Int](_.toString).map(ev(_).toInt)
+	}
+
+	def toLong(implicit ev: A =:= String, ev2: String =:= A): Repr[Long] = {
+		this.seq[Long](_.toString).map(ev(_).toLong)
+	}
+
+	def toFloat(implicit ev: A =:= String, ev2: String =:= A): Repr[Float] = {
+		this.seq[Float](_.toString).map(ev(_).toFloat)
+	}
+
+	def toDouble(implicit ev: A =:= String, ev2: String =:= A): Repr[Double] = {
+		this.seq[Double](_.toString).map(ev(_).toDouble)
 	}
 }
 
@@ -28,6 +48,12 @@ object XmlPickle {
 				XmlPickle(pickle, unpickle)
 			}
 		}
+	}
+
+	def emptyNode(name: String): XmlPickle[Unit] = {
+		XmlPickle(
+			pickle = (_: Unit, xml: Seq[Node]) => Try { <xml/>.copy(label = name) ++ xml },
+			unpickle = XmlParser.nodeWithName(name).map(_ => ()).run)
 	}
 
 	def string(name: String): XmlPickle[String] = {
