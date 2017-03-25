@@ -9,8 +9,8 @@ trait PersonParser {
 
   def parseNumber(name: String): XmlParser[Number] = {
     for {
-      addition <- attributeId("addition").maybe
-      number <- xmlToString(name)
+      addition <- attribute("addition").maybe
+      number <- nodeToString(name)
     } yield Number(number, addition)
   }
 
@@ -19,10 +19,10 @@ trait PersonParser {
       // no attributes here
       address <- branchNode(name) {
         for {
-          street <- xmlToString("street")
+          street <- nodeToString("street")
           number <- parseNumber("number")
-          zipCode <- xmlToString("zip-code")
-          city <- xmlToString("city")
+          zipCode <- nodeToString("zip-code")
+          city <- nodeToString("city")
         } yield RealAddress(street, number, zipCode, city)
       }
     } yield address
@@ -33,9 +33,9 @@ trait PersonParser {
       // no attributes here
       address <- branchNode(name) {
         for {
-          number <- xmlToString("freepost-number")
-          zipCode <- xmlToString("zip-code")
-          city <- xmlToString("city")
+          number <- nodeToString("freepost-number")
+          zipCode <- nodeToString("zip-code")
+          city <- nodeToString("city")
         } yield FreepostAddress(number, zipCode, city)
       }
     } yield address
@@ -48,13 +48,13 @@ trait PersonParser {
   def parsePerson: XmlParser[Person] = {
     implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
-      age <- attribute("age")(_.toInt)
-      _ <- namespaceAttribute("age").map(_.toInt)
+      age <- attribute("age").toInt
+      _ <- namespaceAttribute("age").toInt
       p <- branchNode("person") {
         for {
-          pName <- xmlToString("name")
+          pName <- nodeToString("name")
           address <- parseAddress("address")
-          mail <- xmlToString("mail").maybe
+          mail <- nodeToString("mail").maybe
         } yield Person(pName, age, address, mail)
       }
     } yield p

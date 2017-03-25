@@ -12,7 +12,7 @@ class SeqBuilder[X, Y, State, Repr[_]](pickleA: Pickle[X, State], f: Y => X)(imp
 					state2 <- pickleA.pickle(x, state)
 				} yield state2
 			},
-			unpickle = pickleA.parse.map(g).run)
+			unpickle = pickleA.parse.map(g).parse)
 	}
 
 	def flatMap(g: X => Pickle[Y, State]): Repr[Y] = {
@@ -24,6 +24,6 @@ class SeqBuilder[X, Y, State, Repr[_]](pickleA: Pickle[X, State], f: Y => X)(imp
 					state3 <- pickleA.pickle(x, state2)
 				} yield state3
 			},
-			unpickle = pickleA.parse.flatMap(g(_).parse).run)
+			unpickle = pickleA.parse.flatMap(g(_).parse).parse)
 	}
 }

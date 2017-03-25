@@ -26,29 +26,29 @@ trait BaseBallPickle {
         for {
           players <- picklePlayer("PLAYER").many.seq[Team](_.players)
         } yield Team(n, city, players)
-      }.seq
+      }.seqId
     } yield team
   }
 
-  def pickleDivision(name: String): XmlPickle[(String, Seq[Team])] = {
+  def pickleDivision(name: String): XmlPickle[Division] = {
     for {
-      n <- attribute("NAME").seq[(String, Seq[Team])](_._1)
+      n <- attribute("NAME").seq[Division](_.name)
       division <- branchNode(name) {
         for {
-          teams <- pickleTeam("TEAM").many.seq[(String, Seq[Team])](_._2)
-        } yield n -> teams
-      }.seq
+          teams <- pickleTeam("TEAM").many.seq[Division](_.teams)
+        } yield Division(n, teams)
+      }.seqId
     } yield division
   }
 
-  def pickleLeague(name: String): XmlPickle[(String, Divisions)] = {
+  def pickleLeague(name: String): XmlPickle[League] = {
     for {
-      n <- attribute("NAME").seq[(String, Divisions)](_._1)
+      n <- attribute("NAME").seq[League](_.name)
       league <- branchNode(name) {
         for {
-          divisions <- pickleDivision("DIVISION").many.seq[Divisions](_.toList).map(_.toMap).seq[(String, Divisions)](_._2)
-        } yield n -> divisions
-      }.seq
+          divisions <- pickleDivision("DIVISION").many.seq[League](_.divisions)
+        } yield League(n, divisions)
+      }.seqId
     } yield league
   }
 
@@ -57,9 +57,9 @@ trait BaseBallPickle {
       year <- attribute("YEAR").toInt.seq[Season](_.year)
       season <- branchNode("SEASON") {
         for {
-          leagues <- pickleLeague("LEAGUE").many.seq[Leagues](_.toList).map(_.toMap).seq[Season](_.leagues)
+          leagues <- pickleLeague("LEAGUE").many.seq[Season](_.leagues)
         } yield Season(year, leagues)
-      }.seq
+      }.seqId
     } yield season
   }
 }

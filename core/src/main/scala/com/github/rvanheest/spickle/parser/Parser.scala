@@ -4,9 +4,7 @@ import com.github.rvanheest.spickle.parser.xml.XmlParser.XmlParser
 
 import scala.util.{ Failure, Success, Try }
 
-class Parser[S, A](parse: S => (Try[A], S)) {
-
-	def run(s: S): (Try[A], S) = parse(s)
+class Parser[S, A](val parse: S => (Try[A], S)) {
 
 	def eval(s: S): Try[A] = parse(s)._1
 
@@ -16,7 +14,7 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 		Parser(st => {
 			parse(st) match {
 				case res@(Success(_), _) => res
-				case (Failure(_), _) => other.run(st)
+				case (Failure(_), _) => other.parse(st)
 			}
 		})
 	}
@@ -34,7 +32,7 @@ class Parser[S, A](parse: S => (Try[A], S)) {
 	def flatMap[B](f: A => Parser[S, B]): Parser[S, B] = {
 		Parser(st => {
 			parse(st) match {
-				case (Success(a), st2) => f(a).run(st2)
+				case (Success(a), st2) => f(a).parse(st2)
 				case (Failure(e), st2) => (Failure(e), st2)
 			}
 		})
@@ -100,19 +98,28 @@ object Parser {
 
 	def failure[S, A](e: Throwable): Parser[S, A] = Parser((Failure(e), _))
 
-	def withException[T, S, A](s: S)(constructor: S => A): Parser[T, A] = {
-		try { Parser.from(constructor(s)) }
-		catch { case e: Throwable => Parser.failure(e) }
-	}
-
-	def debugAndFail(pos: String = ""): XmlParser[Nothing] = {
+	def debugAndFail[S](pos: String = ""): Parser[S, Nothing] = {
 		Parser(xs => sys.error(s"you hit a debug statement at $pos: $xs"))
 	}
 
-	def debugAndContinue(pos: String = ""): XmlParser[Unit] = {
+	def debugAndContinue[S](pos: String = ""): Parser[S, Unit] = {
 		Parser(xs => {
 			println(s"you hit a debug statement at $pos: $xs")
 			(Success(()), xs)
 		})
 	}
+
+  implicit class StringParserOperators[State](val xmlParser: Parser[State, String]) extends AnyVal {
+    def toByte: Parser[State, Byte] = xmlParser.map(_.toByte)
+
+    def toShort: Parser[State, Short] = xmlParser.map(_.toShort)
+
+    def toInt: Parser[State, Int] = xmlParser.map(_.toInt)
+
+    def toLong: Parser[State, Long] = xmlParser.map(_.toLong)
+
+    def toFloat: Parser[State, Float] = xmlParser.map(_.toFloat)
+
+    def toDouble: Parser[State, Double] = xmlParser.map(_.toDouble)
+  }
 }

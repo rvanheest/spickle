@@ -12,8 +12,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   private val bar = <bar/>
   private val baz = <baz>hello world</baz>
 
-  "nodeWithName" should "consume the first node in the sequence and return it if its label is equal to the given String" in {
-    inside(nodeWithName("foo").run(Seq(foo, bar, baz))) {
+  "node" should "consume the first node in the sequence and return it if its label is equal to the given String" in {
+    inside(node("foo").parse(Seq(foo, bar, baz))) {
       case (Success(node), nodes) =>
         node shouldBe <foo>test</foo>
         nodes should (have size 2 and contain inOrderOnly(bar, baz))
@@ -21,7 +21,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "consume the first node in the sequence and return an error when the label does not match the given String" in {
-    inside(nodeWithName("bar").run(Seq(foo, bar, baz))) {
+    inside(node("bar").parse(Seq(foo, bar, baz))) {
       case (Failure(e), nodes) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "could not find an element with name 'bar'"
@@ -30,7 +30,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "return an error when the input is empty" in {
-    inside(nodeWithName("foo").run(Seq.empty)) {
+    inside(node("foo").parse(Seq.empty)) {
       case (Failure(e), nodes) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "can't parse an empty node sequence"
@@ -38,8 +38,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "xmlToString" should "consume the first node in the sequence if it has the given label and return the text that is in it" in {
-    inside(xmlToString("foo").run(Seq(foo, bar, baz))) {
+  "nodeToString" should "consume the first node in the sequence if it has the given label and return the text that is in it" in {
+    inside(nodeToString("foo").parse(Seq(foo, bar, baz))) {
       case (Success(s), nodes) =>
         s shouldBe foo.text
         nodes should (have size 2 and contain inOrderOnly(bar, baz))
@@ -47,7 +47,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "consume the first node in the sequence if it has the given label and return an empty String if the node has no content" in {
-    inside(xmlToString("bar").run(Seq(bar, baz))) {
+    inside(nodeToString("bar").parse(Seq(bar, baz))) {
       case (Success(s), nodes) =>
         s shouldBe empty
         nodes should (have size 1 and contain only baz)
@@ -56,28 +56,11 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
   it should "consume the first node in the sequence if it has the given label and return a concattenated String of all subnodes when this node is not a 'leave'" in {
     // @formatter:off
-    inside(xmlToString("qux").run(Seq(<qux><foo>hello</foo><bar>world</bar></qux>, foo))) {
+    inside(nodeToString("qux").parse(Seq(<qux><foo>hello</foo><bar>world</bar></qux>, foo))) {
     // @formatter:on
       case (Success(s), nodes) =>
         s shouldBe "helloworld"
         nodes should (have size 1 and contain only foo)
-    }
-  }
-
-  "node" should "transform the string inside a node into something else using the given function" in {
-    inside(node("foo")(s => s.length).run(Seq(foo, bar, baz))) {
-      case (Success(n), nodes) =>
-        n shouldBe 4
-        nodes should (have size 2 and contain inOrderOnly(bar, baz))
-    }
-  }
-
-  it should "catch any exceptions thrown inside the function and return them as the result of run" in {
-    val error = new Exception("--error--")
-    inside(node("foo")(_ => throw error).run(Seq(foo, bar, baz))) {
-      case (Failure(e), nodes) =>
-        e shouldBe error
-        nodes should (have size 2 and contain inOrderOnly(bar, baz))
     }
   }
 
@@ -92,11 +75,11 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
       // @formatter:on
 
     val subParser = for {
-      bars <- xmlToString("bar").many
-      baz <- xmlToString("baz")
+      bars <- nodeToString("bar").many
+      baz <- nodeToString("baz")
     } yield bars.mkString(" ") + baz
 
-    inside(branchNode("foo")(subParser).run(Utility.trim(input))) {
+    inside(branchNode("foo")(subParser).parse(Utility.trim(input))) {
       case (Success(res), nodes) =>
         res shouldBe "hello world!"
         nodes shouldBe empty
@@ -114,10 +97,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
       // @formatter:on
 
     val subParser = for {
-      bars <- xmlToString("bar").many
+      bars <- nodeToString("bar").many
     } yield bars.mkString(" ")
 
-    inside(branchNode("foo")(subParser).run(Utility.trim(input))) {
+    inside(branchNode("foo")(subParser).parse(Utility.trim(input))) {
       case (Success(res), nodes) =>
         res shouldBe "hello world"
         nodes shouldBe Seq(<baz>!</baz>)
@@ -141,10 +124,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     )
 
     val subParser = for {
-      bars <- xmlToString("bar").many
+      bars <- nodeToString("bar").many
     } yield bars.mkString(" ")
 
-    inside(branchNode("foo")(subParser).run(input map Utility.trim)) {
+    inside(branchNode("foo")(subParser).parse(input map Utility.trim)) {
       case (Success(res), nodes) =>
         res shouldBe "hello world"
         // flattened structure in second foo is intentional; this was flattened in the Utility.trim above
@@ -154,13 +137,13 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "attribute" should "read the attribute with a given name from the first node in the input, transform it using the given constructor function and keep the attribute in the remaining node" in {
+  "attribute" should "read the attribute with a given name from the first node in the input and keep the attribute in the remaining node" in {
     // @formatter:off
     val input = <foo test="123" hello="abc">bar</foo>
     // @formatter:on
-    inside(attribute("test")(_.toInt).run(input)) {
-      case (Success(n), remainder) =>
-        n shouldBe 123
+    inside(attribute("test").parse(input)) {
+      case (Success(s), remainder) =>
+        s shouldBe "123"
         remainder shouldBe input
     }
   }
@@ -169,7 +152,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo test="123" hello="abc">bar</foo>
     // @formatter:on
-    inside(attribute("tset")(_.toInt).run(input)) {
+    inside(attribute("tset").parse(input)) {
       case (Failure(e), remainder) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "empty parser"
@@ -181,7 +164,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo test="" hello="abc">bar</foo>
     // @formatter:on
-    inside(attribute("test")(_.toInt).run(input)) {
+    inside(attribute("test").parse(input)) {
       case (Failure(e), remainder) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "empty parser"
@@ -190,34 +173,11 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "fail when the input is empty" in {
-    inside(attribute("tset")(_.toInt).run(Seq.empty)) {
+    inside(attribute("tset").parse(Seq.empty)) {
       case (Failure(e), remainder) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "you're trying to parse an attribute in an empty xml Node"
         remainder shouldBe empty
-    }
-  }
-
-  it should "catch any exception that is thrown in the constructor function" in {
-    // @formatter:off
-    val input = <foo test="123" hello="abc">bar</foo>
-    // @formatter:on
-    val error = new Exception("--error--")
-    inside(attribute("test")(_ => throw error).run(input)) {
-      case (Failure(e), remainder) =>
-        e shouldBe error
-        remainder shouldBe input
-    }
-  }
-
-  "attributeId" should "return the exact text that was found in the attribute" in {
-    // @formatter:off
-    val input = <foo test="123" hello="abc">bar</foo>
-    // @formatter:on
-    inside(attributeId("test").run(input)) {
-      case (Success(n), remainder) =>
-        n shouldBe "123"
-        remainder shouldBe input
     }
   }
 
@@ -226,7 +186,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val input = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    inside(namespaceAttribute("type").run(input)) {
+    inside(namespaceAttribute("type").parse(input)) {
       case (Success(s), remainder) =>
         s shouldBe "simple"
         remainder shouldBe input
@@ -238,7 +198,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val input = <foo ylink:type="simple" hello="abc">bar</foo>
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    inside(namespaceAttribute("type").run(input)) {
+    inside(namespaceAttribute("type").parse(input)) {
       case (Failure(e), remainder) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "empty parser"
@@ -251,7 +211,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val input = <foo hello="abc">bar</foo>
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    inside(namespaceAttribute("type").run(input)) {
+    inside(namespaceAttribute("type").parse(input)) {
       case (Failure(e), remainder) =>
         e shouldBe a[NoSuchElementException]
         e.getMessage shouldBe "empty parser"
@@ -264,7 +224,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val input = <foo xlink:type="simple" xlink:href="#bar" hello="abc">bar</foo>
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    inside(namespaceAttribute("type").run(input)) {
+    inside(namespaceAttribute("type").parse(input)) {
       case (Success(s), remainder) =>
         s shouldBe "simple"
         remainder shouldBe input

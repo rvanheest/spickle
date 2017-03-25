@@ -7,20 +7,20 @@ trait BaseBallParser {
 
   def parsePlayer(name: String): XmlParser[Player] = {
     for {
-      first <- attributeId("GIVEN_NAME")
-      last <- attributeId("SURNAME")
-      position <- attributeId("POSITION")
-      atBat <- attribute("AT_BATS")(_.toInt).maybe
-      hits <- attribute("HITS")(_.toInt).maybe
-      era <- attribute("ERA")(_.toFloat).maybe
-      _ <- nodeWithName(name)
+      first <- attribute("GIVEN_NAME")
+      last <- attribute("SURNAME")
+      position <- attribute("POSITION")
+      atBat <- attribute("AT_BATS").toInt.maybe
+      hits <- attribute("HITS").toInt.maybe
+      era <- attribute("ERA").toFloat.maybe
+      _ <- node(name)
     } yield Player(first, last, position, atBat, hits, era)
   }
 
   def parseTeam(name: String): XmlParser[Team] = {
     for {
-      n <- attributeId("NAME")
-      city <- attributeId("CITY")
+      n <- attribute("NAME")
+      city <- attribute("CITY")
       team <- branchNode(name) {
         for {
           players <- parsePlayer("PLAYER").many
@@ -29,34 +29,34 @@ trait BaseBallParser {
     } yield team
   }
 
-  def parseDivision(name: String): XmlParser[(String, Seq[Team])] = {
+  def parseDivision(name: String): XmlParser[Division] = {
     for {
-      n <- attributeId("NAME")
+      n <- attribute("NAME")
       division <- branchNode(name) {
         for {
           teams <- parseTeam("TEAM").many
-        } yield n -> teams
+        } yield Division(n, teams)
       }
     } yield division
   }
 
-  def parseLeague(name: String): XmlParser[(String, Divisions)] = {
+  def parseLeague(name: String): XmlParser[League] = {
     for {
-      n <- attributeId("NAME")
+      n <- attribute("NAME")
       league <- branchNode(name) {
         for {
-          divisions <- parseDivision("DIVISION").many.map(_.toMap)
-        } yield n -> divisions
+          divisions <- parseDivision("DIVISION").many
+        } yield League(n, divisions)
       }
     } yield league
   }
 
   def parseSeason: XmlParser[Season] = {
     for {
-      year <- attribute("YEAR")(_.toInt)
+      year <- attribute("YEAR").toInt
       season <- branchNode("SEASON") {
         for {
-          leagues <- parseLeague("LEAGUE").many.map(_.toMap)
+          leagues <- parseLeague("LEAGUE").many
         } yield Season(year, leagues)
       }
     } yield season

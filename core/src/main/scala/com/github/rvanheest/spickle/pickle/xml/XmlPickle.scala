@@ -53,20 +53,20 @@ object XmlPickle {
 	def emptyNode(name: String): XmlPickle[Unit] = {
 		XmlPickle(
 			pickle = (_: Unit, xml: Seq[Node]) => Try { <xml/>.copy(label = name) ++ xml },
-			unpickle = XmlParser.nodeWithName(name).map(_ => ()).run)
+			unpickle = XmlParser.node(name).map(_ => ()).parse)
 	}
 
 	def string(name: String): XmlPickle[String] = {
 		XmlPickle(
 			pickle = (s: String, xml: Seq[Node]) => Try { <xml>{s}</xml>.copy(label = name) ++ xml },
-			unpickle = XmlParser.xmlToString(name).run)
+			unpickle = XmlParser.nodeToString(name).parse)
 	}
 
-	def node[A](name: String)(constructor: String => A)(destructor: A => String): XmlPickle[A] = {
-		XmlPickle(
-			pickle = (a: A, xml: Seq[Node]) => Try { <xml>{destructor(a)}</xml>.copy(label = name) ++ xml },
-			unpickle = XmlParser.node(name)(constructor).run)
-	}
+  def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
+    XmlPickle(
+      pickle = (a: A, xml: Seq[Node]) => pickleA.pickle(a, Nil).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml),
+      unpickle = XmlParser.branchNode(name)(pickleA.parse).parse)
+  }
 
 	def attribute(name: String): XmlPickle[String] = {
 		XmlPickle(
@@ -76,7 +76,7 @@ object XmlPickle {
 					case _ => sys.error("Can only add attributes to elements!")
 				} getOrElse sys.error("Cannot add attributes to an empty sequence")
 			},
-			unpickle = XmlParser.attributeId(name).run)
+			unpickle = XmlParser.attribute(name).parse)
 	}
 
 	def namespaceAttribute(name: String)(implicit namespace: NamespaceBinding): XmlPickle[String] = {
@@ -87,12 +87,6 @@ object XmlPickle {
 					case _ => sys.error("Can only add attributes to elements!")
 				} getOrElse sys.error("Cannot add attributes to an empty sequence")
 			},
-			unpickle = XmlParser.namespaceAttribute(name).run)
-	}
-
-	def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
-		XmlPickle(
-			pickle = (a: A, xml: Seq[Node]) => pickleA.pickle(a, Nil).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml),
-			unpickle = XmlParser.branchNode(name)(pickleA.parse).run)
+			unpickle = XmlParser.namespaceAttribute(name).parse)
 	}
 }

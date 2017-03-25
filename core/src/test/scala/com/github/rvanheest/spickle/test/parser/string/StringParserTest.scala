@@ -8,7 +8,7 @@ import scala.util.{Failure, Success}
 class StringParserTest extends FlatSpec with Matchers with Inside {
 
   "item" should "take the first character from the input string" in {
-    inside(item.run("abc")) {
+    inside(item.parse("abc")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "bc"
@@ -16,7 +16,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "return a failure with a NoSuchElementException when the input string is empty" in {
-    inside(item.run("")) {
+    inside(item.parse("")) {
       case (Failure(e), s) =>
         e shouldBe a[NoSuchElementException]
         s shouldBe empty
@@ -24,7 +24,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "digit" should "only parse the first character if it is a digit" in {
-    inside(digit.run("1abc")) {
+    inside(digit.parse("1abc")) {
       case (Success(n), s) =>
         n shouldBe '1'
         s shouldBe "abc"
@@ -32,7 +32,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "number" should "parse multiple digits as long as they're digits and concat them" in {
-    inside(number.run("1234abc")) {
+    inside(number.parse("1234abc")) {
       case (Success(n), s) =>
         n shouldBe "1234"
         s shouldBe "abc"
@@ -40,7 +40,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "lower" should "parse a single character from the input, provided it is a lowercase letter" in {
-    inside(lower.run("a12")) {
+    inside(lower.parse("a12")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "12"
@@ -48,7 +48,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "upper" should "parse a single character from the input, provided it is an UPPERCASE letter" in {
-    inside(upper.run("A12")) {
+    inside(upper.parse("A12")) {
       case (Success(c), s) =>
         c shouldBe 'A'
         s shouldBe "12"
@@ -56,7 +56,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "letter" should "parse a single character from the input, provided it is a lowercase letter" in {
-    inside(letter.run("a12")) {
+    inside(letter.parse("a12")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "12"
@@ -64,7 +64,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "parse a single character from the input, provided it is an UPPERCASE letter" in {
-    inside(letter.run("A12")) {
+    inside(letter.parse("A12")) {
       case (Success(c), s) =>
         c shouldBe 'A'
         s shouldBe "12"
@@ -72,7 +72,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "alphanum" should "parse a single character from the input, provided it is a lowercase letter" in {
-    inside(alphanum.run("a12")) {
+    inside(alphanum.parse("a12")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "12"
@@ -80,7 +80,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "parse a single character from the input, provided it is an UPPERCASE letter" in {
-    inside(alphanum.run("A12")) {
+    inside(alphanum.parse("A12")) {
       case (Success(c), s) =>
         c shouldBe 'A'
         s shouldBe "12"
@@ -88,7 +88,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "parse a single character from the input, provided it is a digit" in {
-    inside(alphanum.run("1AB")) {
+    inside(alphanum.parse("1AB")) {
       case (Success(n), s) =>
         n shouldBe '1'
         s shouldBe "AB"
@@ -96,7 +96,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "char" should "parse a single character from the input, provided it is the specified digit" in {
-    inside(char('a').run("abc")) {
+    inside(char('a').parse("abc")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "bc"
@@ -104,7 +104,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "space" should "parse a single character from the input, provided it is a space" in {
-    inside(space.run(" abc")) {
+    inside(space.parse(" abc")) {
       case (Success(c), s) =>
         c shouldBe ' '
         s shouldBe "abc"
@@ -112,7 +112,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "spaces" should "skip spaces until it reaches a non-space character" in {
-    inside(spaces.run("   abc")) {
+    inside(spaces.parse("   abc")) {
       case (Success(_), s) =>
         s shouldBe "abc"
     }
@@ -120,7 +120,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
 
   "string" should "consume a specified String from the input and return this string if it matches" in {
     val input = "abc"
-    inside(string(input).run("abcdef")) {
+    inside(string(input).parse("abcdef")) {
       case (Success(res), s) =>
         res shouldBe input
         s shouldBe "def"
@@ -129,7 +129,7 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
 
   it should "consume nothing if the empty string is given as input" in {
     val input = ""
-    inside(string(input).run("abcdef")) {
+    inside(string(input).parse("abcdef")) {
       case (Success(res), s) =>
         res shouldBe input
         s shouldBe "abcdef"

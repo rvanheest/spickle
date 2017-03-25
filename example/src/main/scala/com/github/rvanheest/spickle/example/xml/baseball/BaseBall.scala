@@ -9,7 +9,7 @@ trait BaseBall {
                     hits: Option[Int],
                     era: Option[Float])
   case class Team(name: String, city: String, players: Seq[Player])
-  type Divisions = Map[String, Seq[Team]]
-  type Leagues = Map[String, Divisions]
-  case class Season(year: Int, leagues: Leagues)
+  case class Division(name: String, teams: Seq[Team])
+  case class League(name: String, divisions: Seq[Division])
+  case class Season(year: Int, leagues: Seq[League])
 }

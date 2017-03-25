@@ -1,7 +1,6 @@
 package com.github.rvanheest.spickle.parser.xml
 
 import com.github.rvanheest.spickle.parser.Parser
-import com.github.rvanheest.spickle.parser.Parser.withException
 
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ NamespaceBinding, Node }
@@ -17,25 +16,21 @@ object XmlParser {
 			.getOrElse((Failure(new NoSuchElementException("can't parse an empty node sequence")), Seq.empty)))
 	}
 
-	def nodeWithName(name: String): XmlParser[Node] = {
+	def node(name: String): XmlParser[Node] = {
 		nodeItem.transform {
 			case (head, tail) if head.label == name => (Success(head), tail)
 			case (head, tail) => (Failure(new NoSuchElementException(s"could not find an element with name '$name'")), head +: tail)
 		}
 	}
 
-	def xmlToString(name: String): XmlParser[String] = {
-		nodeWithName(name).map(_.text)
-	}
-
-	def node[T](name: String)(constructor: String => T): XmlParser[T] = {
-		xmlToString(name).flatMap(withException(_)(constructor))
+	def nodeToString(name: String): XmlParser[String] = {
+		node(name).map(_.text)
 	}
 
 	def branchNode[A](name: String)(subParser: XmlParser[A]): XmlParser[A] = {
-		Parser(nodeWithName(name).map(_.child).run(_) match {
+		Parser(node(name).map(_.child).parse(_) match {
 			case (Success(childNodes), rest) =>
-				val (r, rest2) = subParser.run(childNodes)
+				val (r, rest2) = subParser.parse(childNodes)
 				(r, rest2 ++ rest)
 			case (Failure(e), rest) => (Failure(e), rest)
 		})
@@ -48,15 +43,10 @@ object XmlParser {
 			.getOrElse((Failure(new NoSuchElementException("you're trying to parse an attribute in an empty xml Node")), Seq.empty)))
 	}
 
-	def attribute[T](attr: String)(constructor: String => T): XmlParser[T] = {
+	def attribute(attr: String): XmlParser[String] = {
 		attributeItem
 			.map(_ \@ attr)
 			.satisfy(_.nonEmpty)
-			.flatMap(withException(_)(constructor))
-	}
-
-	def attributeId(attr: String): XmlParser[String] = {
-		attribute(attr)(identity)
 	}
 
 	def namespaceAttribute(attrName: String)(implicit namespace: NamespaceBinding): XmlParser[String] = {

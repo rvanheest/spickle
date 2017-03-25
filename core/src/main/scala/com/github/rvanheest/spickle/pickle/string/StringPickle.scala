@@ -27,7 +27,7 @@ object StringPickle {
   def item: StringPickle[Char] = {
     StringPickle(
       pickle = (c, s) => Try(c +: s),
-      unpickle = StringParser.item.run)
+      unpickle = StringParser.item.parse)
   }
 
   def digit: StringPickle[Char] = item.satisfy(_.isDigit)
@@ -56,6 +56,6 @@ object StringPickle {
           } yield s).pickle(str, state)
           case Nil => Try(state)
         },
-      unpickle = StringParser.string(s).run)
+      unpickle = StringParser.string(s).parse)
   }
 }

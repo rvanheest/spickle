@@ -15,7 +15,7 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 	protected[this] implicit def builder[X]: PickleBuilder[X, State, Repr[X]]
 	private[pickle] def parse: Parser[State, A] = Parser(this.unpickle)
 
-	def seq: SeqBuilder[A, A, State, Repr] = new SeqBuilder(this, identity)
+	def seqId: SeqBuilder[A, A, State, Repr] = new SeqBuilder(this, identity)
 
 	def seq[B](f: B => A): SeqBuilder[A, B, State, Repr] = new SeqBuilder(this, f)
 
@@ -29,14 +29,14 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 	def orElse(other: => Pickle[A, State]): Repr[A] = {
 		builder[A](
 			pickle = (a, state) => this.pickle(a, state) orElse other.pickle(a, state),
-			unpickle = (this.parse <|> other.parse).run)
+			unpickle = (this.parse <|> other.parse).parse)
 	}
 
 	def satisfy(predicate: A => Boolean): Repr[A] = {
 		builder[A](
 			pickle = (a, state) => if (predicate(a)) this.pickle(a, state)
 			else Failure(new NoSuchElementException("empty pickle")),
-			unpickle = this.parse.satisfy(predicate).run)
+			unpickle = this.parse.satisfy(predicate).parse)
 	}
 
 	def noneOf(as: Seq[A]): Repr[A] = satisfy(!as.contains(_))
@@ -44,13 +44,13 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 	def maybe: Repr[Option[A]] = {
 		builder[Option[A]](
 			pickle = (optA, state) => optA.map(this.pickle(_, state)).getOrElse(Try(state)),
-			unpickle = this.parse.maybe.run)
+			unpickle = this.parse.maybe.parse)
 	}
 
 	def many: Repr[Seq[A]] = {
 		builder[Seq[A]](
 			pickle = (as, state) => as.foldRight(Try(state))((a, triedState) => triedState.flatMap(this.pickle(a, _))),
-			unpickle = this.parse.many.run)
+			unpickle = this.parse.many.parse)
 	}
 
 	def atLeastOnce: Repr[Seq[A]] = {
@@ -65,13 +65,13 @@ abstract class Pickle[A, State](val pickle: (A, State) => Try[State],
 	def takeWhile(predicate: A => Boolean): Repr[Seq[A]] = {
 		builder[Seq[A]](
 			pickle = this.satisfy(predicate).many.pickle,
-			unpickle = this.parse.takeWhile(predicate).run)
+			unpickle = this.parse.takeWhile(predicate).parse)
 	}
 
 	def separatedBy[Sep](separator: Sep)(sep: Repr[Sep]): Repr[Seq[A]] = {
 		builder[Seq[A]](
 			pickle = (as, state) => this.separatedBy1(separator)(sep).pickle(as, state) orElse Try(state),
-			unpickle = this.parse.separatedBy(sep.parse).run)
+			unpickle = this.parse.separatedBy(sep.parse).parse)
 	}
 
 	def separatedBy1[Sep](separator: Sep)(sep: Repr[Sep]): Repr[Seq[A]] = {

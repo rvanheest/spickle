@@ -24,7 +24,7 @@ trait PersonPickle {
           zipCode <- string("zip-code").seq[RealAddress](_.zipCode)
           city <- string("city").seq[RealAddress](_.city)
         } yield RealAddress(street, number, zipCode, city)
-      }.seq
+      }.seqId
     } yield address
   }
 
@@ -36,7 +36,7 @@ trait PersonPickle {
           zipCode <- string("zip-code").seq[FreepostAddress](_.zipCode)
           city <- string("city").seq[FreepostAddress](_.city)
         } yield FreepostAddress(number, zipCode, city)
-      }.seq
+      }.seqId
     } yield address
   }
 
@@ -55,7 +55,7 @@ trait PersonPickle {
           address <- pickleAddress("address").seq[Person](_.address)
           mail <- string("mail").maybe.seq[Person](_.mail)
         } yield Person(pName, age, address, mail)
-      }.seq
+      }.seqId
     } yield p
   }
 }
