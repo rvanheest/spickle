@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.example.xml.baseball
 
 import scala.util.Success
+import scala.xml.PrettyPrinter
 
 object BaseBallPickleExample extends App with BaseBall with BaseBallXml with BaseBallPickle {
 
@@ -9,5 +10,7 @@ object BaseBallPickleExample extends App with BaseBall with BaseBallXml with Bas
 
   println(season)
   println(rest)
-  println(seasonXml)
+  for (xml <- seasonXml) {
+    println(new PrettyPrinter(160, 4).format(xml))
+  }
 }

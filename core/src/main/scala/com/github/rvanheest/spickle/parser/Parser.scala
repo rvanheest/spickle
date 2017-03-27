@@ -1,7 +1,5 @@
 package com.github.rvanheest.spickle.parser
 
-import com.github.rvanheest.spickle.parser.xml.XmlParser.XmlParser
-
 import scala.util.{ Failure, Success, Try }
 
 class Parser[S, A](val parse: S => (Try[A], S)) {
@@ -28,6 +26,10 @@ class Parser[S, A](val parse: S => (Try[A], S)) {
 			}
 		})
 	}
+
+	def as[B](b: => B): Parser[S, B] = this.map(_ => b)
+
+	def void: Parser[S, Unit] = this.as(())
 
 	def flatMap[B](f: A => Parser[S, B]): Parser[S, B] = {
 		Parser(st => {
@@ -109,7 +111,7 @@ object Parser {
 		})
 	}
 
-  implicit class StringParserOperators[State](val xmlParser: Parser[State, String]) extends AnyVal {
+  implicit class StringOperators[State](val xmlParser: Parser[State, String]) extends AnyVal {
     def toByte: Parser[State, Byte] = xmlParser.map(_.toByte)
 
     def toShort: Parser[State, Short] = xmlParser.map(_.toShort)

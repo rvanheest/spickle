@@ -1,6 +1,5 @@
 package com.github.rvanheest.spickle.example.xml.person
 
-import com.github.rvanheest.spickle.pickle.xml.XmlPickle
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle._
 
 import scala.xml.{ NamespaceBinding, TopScope }

@@ -3,9 +3,9 @@ package com.github.rvanheest.spickle.pickle
 import scala.language.higherKinds
 import scala.util.Try
 
-class SeqBuilder[X, Y, State, Repr[_]](pickleA: Pickle[X, State], f: Y => X)(implicit builder: PickleBuilder[Y, State, Repr[Y]]) {
-	def map(g: X => Y): Repr[Y] = {
-		builder(
+class SeqBuilder[X, Y, State](pickleA: Pickle[X, State], f: Y => X) {
+	def map(g: X => Y): Pickle[Y, State] = {
+		Pickle(
 			pickle = (y, state) => {
 				for {
 					x <- Try { f(y) }
@@ -15,8 +15,8 @@ class SeqBuilder[X, Y, State, Repr[_]](pickleA: Pickle[X, State], f: Y => X)(imp
 			unpickle = pickleA.parse.map(g).parse)
 	}
 
-	def flatMap(g: X => Pickle[Y, State]): Repr[Y] = {
-		builder(
+	def flatMap(g: X => Pickle[Y, State]): Pickle[Y, State] = {
+		Pickle(
 			pickle = (y, state) => {
 				for {
 					x <- Try { f(y) }

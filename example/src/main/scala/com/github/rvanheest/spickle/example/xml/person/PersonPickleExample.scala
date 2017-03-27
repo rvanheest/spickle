@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.example.xml.person
 
 import scala.util.Success
+import scala.xml.PrettyPrinter
 
 object PersonPickleExample extends App with Person with PersonXml with PersonPickle {
 
@@ -9,7 +10,9 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
 
   println(person1)
   println(rest1)
-  println(person1Xml)
+  for (xml <- person1Xml) {
+    println(new PrettyPrinter(160, 4).format(xml))
+  }
   println(xml1.toString() == person1Xml.toString())
   println
 
@@ -18,7 +21,9 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
 
   println(person2)
   println(rest2)
-  println(person2Xml)
+  for (xml <- person2Xml) {
+    println(new PrettyPrinter(160, 4).format(xml))
+  }
   println(xml2.toString() == person2Xml.toString())
   println
 
@@ -27,6 +32,8 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
 
   println(person3)
   println(rest3)
-  println(person3Xml)
+  for (xml <- person3Xml) {
+    println(new PrettyPrinter(160, 4).format(xml))
+  }
   println(xml3.toString() == person3Xml.toString())
 }

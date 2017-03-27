@@ -1,31 +1,17 @@
 package com.github.rvanheest.spickle.pickle.string
 
 import com.github.rvanheest.spickle.parser.string.StringParser
-import com.github.rvanheest.spickle.pickle.{ Pickle, PickleBuilder }
+import com.github.rvanheest.spickle.pickle.Pickle
 
 import scala.language.postfixOps
 import scala.util.Try
 
-case class StringPickle[A](override val pickle: (A, String) => Try[String],
-                           override val unpickle: String => (Try[A], String))
-  extends Pickle[A, String](pickle, unpickle) {
-
-  type Repr[X] = StringPickle[X]
-
-  protected[this] implicit def builder[X]: PickleBuilder[X, String, StringPickle[X]] = StringPickle.stringPickleBuilder
-}
-
 object StringPickle {
-  protected[StringPickle] implicit def stringPickleBuilder[X]: PickleBuilder[X, String, StringPickle[X]] = {
-    new PickleBuilder[X, String, StringPickle[X]] {
-      def apply(pickle: (X, String) => Try[String], unpickle: String => (Try[X], String)): StringPickle[X] = {
-        StringPickle(pickle, unpickle)
-      }
-    }
-  }
+
+  type StringPickle[A] = Pickle[A, String]
 
   def item: StringPickle[Char] = {
-    StringPickle(
+    Pickle(
       pickle = (c, s) => Try(c +: s),
       unpickle = StringParser.item.parse)
   }
@@ -47,7 +33,7 @@ object StringPickle {
   def space: StringPickle[Char] = char(' ')
 
   def string(s: String): StringPickle[String] = {
-    StringPickle(
+    Pickle(
       pickle = (str, state) =>
         s.toList match {
           case x :: xs => (for {
