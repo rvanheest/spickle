@@ -8,7 +8,7 @@ import scala.util.Try
 
 object StringPickle {
 
-  type StringPickle[A] = Pickle[A, String]
+  type StringPickle[A] = Pickle[String, A]
 
   def item: StringPickle[Char] = {
     Pickle(

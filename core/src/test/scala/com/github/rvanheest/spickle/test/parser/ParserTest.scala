@@ -12,7 +12,7 @@ class ParserTest extends FlatSpec with Matchers with Inside {
 
   private type TestParser = Parser[String, Int]
 
-  private def point: TestParser = new TestParser(s => s.toList match {
+  private def point: TestParser = new TestParser(_.toList match {
     case Nil => (Failure(emptyError), "")
     case p :: ps => (Try(p.toString.toInt), ps.mkString)
   })

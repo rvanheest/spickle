@@ -9,7 +9,7 @@ import scala.xml._
 
 object XmlPickle {
 
-  type XmlPickle[A] = Pickle[A, Seq[Node]]
+  type XmlPickle[A] = Pickle[Seq[Node], A]
 
   def emptyNode(name: String): XmlPickle[Unit] = {
     Pickle(
