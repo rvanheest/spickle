@@ -1,9 +1,10 @@
 package com.github.rvanheest.spickle.test.parser.string
 
-import org.scalatest.{FlatSpec, Inside, Matchers}
+import com.github.rvanheest.spickle.parser.ParserFailedException
+import org.scalatest.{ FlatSpec, Inside, Matchers }
 import com.github.rvanheest.spickle.parser.string.StringParser._
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class StringParserTest extends FlatSpec with Matchers with Inside {
 
@@ -31,6 +32,13 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
+  it should "fail if the first character is not a digit" in {
+    inside(digit.parse("abc")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input 'a' is not a digit"
+    }
+  }
+
   "number" should "parse multiple digits as long as they're digits and concat them" in {
     inside(number.parse("1234abc")) {
       case (Success(n), s) =>
@@ -39,11 +47,27 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "lower" should "parse a single character from the input, provided it is a lowercase letter" in {
+  it should "fail if the first character is not a digit" in {
+    inside(number.parse("abc")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input 'a' is not a digit"
+        s shouldBe "bc"
+    }
+  }
+
+  "lower" should "parse a single character from the input, provided it is a lowercase character" in {
     inside(lower.parse("a12")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "12"
+    }
+  }
+
+  it should "fail if the first character is not a lowercase character" in {
+    inside(lower.parse("Abc")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input 'A' is not a lowercase character"
+        s shouldBe "bc"
     }
   }
 
@@ -52,6 +76,14 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
       case (Success(c), s) =>
         c shouldBe 'A'
         s shouldBe "12"
+    }
+  }
+
+  it should "fail if the first character is not an uppercase character" in {
+    inside(upper.parse("aBC")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input 'a' is not an uppercase character"
+        s shouldBe "BC"
     }
   }
 
@@ -68,6 +100,14 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
       case (Success(c), s) =>
         c shouldBe 'A'
         s shouldBe "12"
+    }
+  }
+
+  it should "fail if the first character is not a letter" in {
+    inside(letter.parse("1Bc")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input '1' is not a letter"
+        s shouldBe "Bc"
     }
   }
 
@@ -95,11 +135,27 @@ class StringParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "char" should "parse a single character from the input, provided it is the specified digit" in {
+  it should "fail if the first character is not an alphanumeric character" in {
+    inside(alphanum.parse("#bc")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input '#' is not an alphanumeric character"
+        s shouldBe "bc"
+    }
+  }
+
+  "char" should "parse a single character from the input, provided it is the specified character" in {
     inside(char('a').parse("abc")) {
       case (Success(c), s) =>
         c shouldBe 'a'
         s shouldBe "bc"
+    }
+  }
+
+  it should "fail if the first character is not the specified character" in {
+    inside(char('a').parse("bcd")) {
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input 'b' is not equal to 'a'"
+        s shouldBe "cd"
     }
   }
 

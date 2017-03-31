@@ -1,5 +1,6 @@
 package com.github.rvanheest.spickle.test.parser.xml
 
+import com.github.rvanheest.spickle.parser.ParserFailedException
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 import com.github.rvanheest.spickle.parser.xml.XmlParser._
 
@@ -22,18 +23,16 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
   it should "consume the first node in the sequence and return an error when the label does not match the given String" in {
     inside(node("bar").parse(Seq(foo, bar, baz))) {
-      case (Failure(e), nodes) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "could not find an element with name 'bar'"
+      case (Failure(ParserFailedException(msg)), nodes) =>
+        msg shouldBe "could not find an element with name 'bar'"
         nodes should (have size 3 and contain inOrderOnly(foo, bar, baz))
     }
   }
 
   it should "return an error when the input is empty" in {
     inside(node("foo").parse(Seq.empty)) {
-      case (Failure(e), nodes) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "can't parse an empty node sequence"
+      case (Failure(ParserFailedException(msg)), nodes) =>
+        msg shouldBe "can't parse an empty node sequence"
         nodes shouldBe empty
     }
   }
@@ -153,9 +152,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val input = <foo test="123" hello="abc">bar</foo>
     // @formatter:on
     inside(attribute("tset").parse(input)) {
-      case (Failure(e), remainder) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "empty parser"
+      case (Failure(ParserFailedException(msg)), remainder) =>
+        msg shouldBe s"attribute 'tset' is not found or is empty"
         remainder shouldBe input
     }
   }
@@ -165,9 +163,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val input = <foo test="" hello="abc">bar</foo>
     // @formatter:on
     inside(attribute("test").parse(input)) {
-      case (Failure(e), remainder) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "empty parser"
+      case (Failure(ParserFailedException(msg)), remainder) =>
+        msg shouldBe s"attribute 'test' is not found or is empty"
         remainder shouldBe input
     }
   }
@@ -199,9 +196,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     inside(namespaceAttribute("type").parse(input)) {
-      case (Failure(e), remainder) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "empty parser"
+      case (Failure(ParserFailedException(msg)), remainder) =>
+        msg shouldBe "attribute 'type' with namespace ' xmlns:xlink=\"http://www.w3.org/1999/xlink\"' is not found"
         remainder shouldBe input
     }
   }
@@ -212,21 +208,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     inside(namespaceAttribute("type").parse(input)) {
-      case (Failure(e), remainder) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "empty parser"
-        remainder shouldBe input
-    }
-  }
-
-  it should "take the first when two the same attributes are in the node" in {
-    // @formatter:off
-    val input = <foo xlink:type="simple" xlink:href="#bar" hello="abc">bar</foo>
-    // @formatter:on
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    inside(namespaceAttribute("type").parse(input)) {
-      case (Success(s), remainder) =>
-        s shouldBe "simple"
+      case (Failure(ParserFailedException(msg)), remainder) =>
+        msg shouldBe "attribute 'type' with namespace ' xmlns:xlink=\"http://www.w3.org/1999/xlink\"' is not found"
         remainder shouldBe input
     }
   }

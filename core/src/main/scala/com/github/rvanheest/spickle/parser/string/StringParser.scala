@@ -17,19 +17,19 @@ object StringParser {
 		})
 	}
 
-	def digit: StringParser[Char] = item.satisfy(_.isDigit)
+	def digit: StringParser[Char] = item.satisfy(_.isDigit, a => s"input '$a' is not a digit")
 
 	def number: StringParser[String] = digit.atLeastOnce.map(_.mkString)
 
-	def lower: StringParser[Char] = item.satisfy(_.isLower)
+	def lower: StringParser[Char] = item.satisfy(_.isLower, a => s"input '$a' is not a lowercase character")
 
-	def upper: StringParser[Char] = item.satisfy(_.isUpper)
+	def upper: StringParser[Char] = item.satisfy(_.isUpper, a => s"input '$a' is not an uppercase character")
 
-	def letter: StringParser[Char] = item.satisfy(_.isLetter)
+	def letter: StringParser[Char] = item.satisfy(_.isLetter, a => s"input '$a' is not a letter")
 
-	def alphanum: StringParser[Char] = item.satisfy(c => c.isLetter || c.isDigit)
+	def alphanum: StringParser[Char] = item.satisfy(c => c.isLetter || c.isDigit, a => s"input '$a' is not an alphanumeric character")
 
-	def char(c: Char): StringParser[Char] = item.satisfy(c ==)
+	def char(c: Char): StringParser[Char] = item.satisfy(c ==, a => s"input '$a' is not equal to '$c'")
 
 	def space: StringParser[Char] = char(' ')
 

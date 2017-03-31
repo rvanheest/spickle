@@ -1,6 +1,6 @@
 package com.github.rvanheest.spickle.test.parser
 
-import com.github.rvanheest.spickle.parser.Parser
+import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
 import scala.language.postfixOps
@@ -8,11 +8,11 @@ import scala.util.{ Failure, Success, Try }
 
 class ParserTest extends FlatSpec with Matchers with Inside {
 
-  val emptyError = new NoSuchElementException("you're trying to parse a character in an empty String")
+  private val emptyError = ParserFailedException("you're trying to parse a character in an empty String")
 
-  type TestParser = Parser[String, Int]
+  private type TestParser = Parser[String, Int]
 
-  def point: TestParser = new TestParser(s => s.toList match {
+  private def point: TestParser = new TestParser(s => s.toList match {
     case Nil => (Failure(emptyError), "")
     case p :: ps => (Try(p.toString.toInt), ps.mkString)
   })
@@ -49,6 +49,17 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "run the second parser if the first parser returns a failure" in {
+    val p1 = Parser.failure[String, Int](new Exception("ex"))
+    val p2 = point
+
+    inside(p1.orElse(p2).parse("123")) {
+      case (Success(x), s) =>
+        x shouldBe 1
+        s shouldBe "23"
+    }
+  }
+
+  it should "run the second parser if the first parser returns a failure and return the failure of the second parser if that one fails as well" in {
     val p1 = point
     val p2 = Parser.failure[String, Int](new Exception("ex"))
 
@@ -56,6 +67,21 @@ class ParserTest extends FlatSpec with Matchers with Inside {
       case (Failure(e), s) =>
         e.getMessage shouldBe "ex"
         s shouldBe "a123"
+    }
+  }
+
+  it should "run the second parser with the same input as the first when the first parser fails" in {
+    var visited = false
+    var input: String = null
+    val p1 = point.flatMap(_ => Parser.failure[String, Int](new Exception("ex")))
+    val p2 = Parser[String, Int](s => { visited = true; input = s; point.parse(s) })
+
+    inside(p1.orElse(p2).parse("123")) {
+      case (Success(x), s) =>
+        x shouldBe 1
+        s shouldBe "23"
+        visited shouldBe true
+        input shouldBe "123"
     }
   }
 
@@ -129,9 +155,8 @@ class ParserTest extends FlatSpec with Matchers with Inside {
 
   it should "produce a failing parser if the predicate fails" in {
     inside(point.satisfy(_ % 2 == 0).parse("123")) {
-      case (Failure(e), s) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "empty parser"
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input '1' did not satisfy predicate"
         s shouldBe "23"
     }
   }
@@ -156,10 +181,17 @@ class ParserTest extends FlatSpec with Matchers with Inside {
 
   it should "create a parser that fails when the value is in the given list" in {
     inside(point.noneOf(List(0, 1, 2)).parse("123")) {
-      case (Failure(e), s) =>
-        e shouldBe a[NoSuchElementException]
-        e.getMessage shouldBe "empty parser"
+      case (Failure(ParserFailedException(msg)), s) =>
+        msg shouldBe "input '1' did contain any of [0, 1, 2]"
         s shouldBe "23"
+    }
+  }
+
+  it should "fail if the parser was not able to parse the input" in {
+    inside(point.noneOf(List(0, 1, 2)).parse("a123")) {
+      case (Failure(e), s) =>
+        e shouldBe a[NumberFormatException]
+        s shouldBe "123"
     }
   }
 

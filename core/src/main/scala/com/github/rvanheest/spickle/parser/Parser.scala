@@ -55,12 +55,17 @@ class Parser[S, A](val parse: S => (Try[A], S)) {
 	def <<[B](other: => Parser[S, B]): Parser[S, A] = this >>= (x => other >> Parser.from(x))
 
 	def satisfy(predicate: A => Boolean): Parser[S, A] = {
-		this >>= (x => if (predicate(x)) Parser.from(x) else Parser.empty)
+		this.satisfy(predicate, a => s"input '$a' did not satisfy predicate")
+	}
+	def satisfy(predicate: A => Boolean, errMsg: A => String): Parser[S, A] = {
+		this >>= (x => if (predicate(x)) Parser.from(x)
+									 else Parser.failure(ParserFailedException(errMsg(x))))
 	}
 	def filter(predicate: A => Boolean): Parser[S, A] = this.satisfy(predicate)
 
-  // TODO improve error message
-	def noneOf(as: Seq[A]): Parser[S, A] = this.satisfy(!as.contains(_))
+	def noneOf(as: Seq[A]): Parser[S, A] = {
+		this.satisfy(!as.contains(_), a => s"input '$a' did contain any of ${as.mkString("[", ", ", "]")}")
+	}
 
 	def maybe: Parser[S, Option[A]] = this.map(Option(_)) <|> Parser.from(Option.empty)
 
@@ -111,17 +116,17 @@ object Parser {
 		})
 	}
 
-  implicit class StringOperators[State](val xmlParser: Parser[State, String]) extends AnyVal {
-    def toByte: Parser[State, Byte] = xmlParser.map(_.toByte)
+  implicit class StringOperators[State](val parser: Parser[State, String]) extends AnyVal {
+    def toByte: Parser[State, Byte] = parser.map(_.toByte)
 
-    def toShort: Parser[State, Short] = xmlParser.map(_.toShort)
+    def toShort: Parser[State, Short] = parser.map(_.toShort)
 
-    def toInt: Parser[State, Int] = xmlParser.map(_.toInt)
+    def toInt: Parser[State, Int] = parser.map(_.toInt)
 
-    def toLong: Parser[State, Long] = xmlParser.map(_.toLong)
+    def toLong: Parser[State, Long] = parser.map(_.toLong)
 
-    def toFloat: Parser[State, Float] = xmlParser.map(_.toFloat)
+    def toFloat: Parser[State, Float] = parser.map(_.toFloat)
 
-    def toDouble: Parser[State, Double] = xmlParser.map(_.toDouble)
+    def toDouble: Parser[State, Double] = parser.map(_.toDouble)
   }
 }

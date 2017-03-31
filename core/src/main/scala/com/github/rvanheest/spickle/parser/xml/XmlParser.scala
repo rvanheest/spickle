@@ -1,7 +1,8 @@
 package com.github.rvanheest.spickle.parser.xml
 
-import com.github.rvanheest.spickle.parser.Parser
+import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 
+import scala.language.postfixOps
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ NamespaceBinding, Node }
 
@@ -13,13 +14,13 @@ object XmlParser {
 		Parser(ns => ns
 			.headOption
 			.map(head => (Try(head), ns.tail))
-			.getOrElse((Failure(new NoSuchElementException("can't parse an empty node sequence")), Seq.empty)))
+			.getOrElse((Failure(ParserFailedException("can't parse an empty node sequence")), Seq.empty)))
 	}
 
 	def node(name: String): XmlParser[Node] = {
 		nodeItem.transform {
 			case (head, tail) if head.label == name => (Success(head), tail)
-			case (head, tail) => (Failure(new NoSuchElementException(s"could not find an element with name '$name'")), head +: tail)
+			case (head, tail) => (Failure(ParserFailedException(s"could not find an element with name '$name'")), head +: tail)
 		}
 	}
 
@@ -46,14 +47,15 @@ object XmlParser {
 	def attribute(attr: String): XmlParser[String] = {
 		attributeItem
 			.map(_ \@ attr)
-			.satisfy(_.nonEmpty)
+			.satisfy(_.nonEmpty, _ => s"attribute '$attr' is not found or is empty")
 	}
 
-	def namespaceAttribute(attrName: String)(implicit namespace: NamespaceBinding): XmlParser[String] = {
+	def namespaceAttribute(attr: String)(implicit namespace: NamespaceBinding): XmlParser[String] = {
 		// notice that _.attributes(...) can be null!!!
 		attributeItem
-			.map(_.attributes(namespace.uri, namespace, attrName))
-			.satisfy(xs => xs != null && xs.nonEmpty)
+			.map(_.attributes(namespace.uri, namespace, attr))
+			.satisfy(null !=, _ => s"attribute '$attr' with namespace '$namespace' is not found")
+			.satisfy(_.nonEmpty, _ => s"attribute '$attr' with namespace '$namespace' is empty")
 			.map(_.head.text)
 	}
 }
