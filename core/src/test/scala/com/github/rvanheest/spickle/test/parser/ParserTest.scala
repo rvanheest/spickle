@@ -130,7 +130,8 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   }
 
   "transform" should "apply the function in transform when the parser returns a success" in {
-    inside(point.transform((i, s) => (if (i == 1) Success(i + 1) else Failure(new Exception("error!")), i + s)).parse("123")) {
+    inside(point.transform((i, s) => (if (i == 1) Success(i + 1)
+                                      else Failure(new Exception("error!")), i + s)).parse("123")) {
       case (Success(i), s) =>
         i shouldBe 2
         s shouldBe "123"
@@ -138,7 +139,8 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "not apply the function in transform when the parser returns a failure" in {
-    inside(point.transform((i, s) => (if (i == 1) Success(i + 1) else Failure(new Exception("error!")), i + s)).parse("234")) {
+    inside(point.transform((i, s) => (if (i == 1) Success(i + 1)
+                                      else Failure(new Exception("error!")), i + s)).parse("234")) {
       case (Failure(e), s) =>
         e.getMessage shouldBe "error!"
         s shouldBe "234"
@@ -198,7 +200,7 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   "maybe" should "create a parser that succeeds with the value wrapped in an Option" in {
     inside(point.maybe.parse("123")) {
       case (Success(opt), s) =>
-        opt should contain (1)
+        opt should contain(1)
         s shouldBe "23"
     }
   }
@@ -214,7 +216,7 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   "many" should "apply the parser as many times as possible until it produces a failure" in {
     inside(point.many.parse("123a456")) {
       case (Success(is), s) =>
-        is should (have size 3 and contain inOrderOnly (1, 2, 3))
+        is should (have size 3 and contain inOrderOnly(1, 2, 3))
         s shouldBe "a456"
     }
   }
@@ -222,7 +224,7 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   it should "apply the parser as many times as possible until the end of the input is reached" in {
     inside(point.many.parse("123")) {
       case (Success(is), s) =>
-        is should (have size 3 and contain inOrderOnly (1, 2, 3))
+        is should (have size 3 and contain inOrderOnly(1, 2, 3))
         s shouldBe empty
     }
   }
@@ -246,7 +248,7 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   "atLeastOnce" should "apply the parser as many times as possible, but at least, once until it produces a failure" in {
     inside(point.atLeastOnce.parse("123a456")) {
       case (Success(is), s) =>
-        is should (have size 3 and contain inOrderOnly (1, 2, 3))
+        is should (have size 3 and contain inOrderOnly(1, 2, 3))
         s shouldBe "a456"
     }
   }
@@ -254,7 +256,7 @@ class ParserTest extends FlatSpec with Matchers with Inside {
   it should "apply the parser as many times as possible, but at least once, until the end of the input is reached" in {
     inside(point.atLeastOnce.parse("123")) {
       case (Success(is), s) =>
-        is should (have size 3 and contain inOrderOnly (1, 2, 3))
+        is should (have size 3 and contain inOrderOnly(1, 2, 3))
         s shouldBe empty
     }
   }
