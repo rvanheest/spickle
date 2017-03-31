@@ -38,8 +38,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "nodeToString" should "consume the first node in the sequence if it has the given label and return the text that is in it" in {
-    inside(nodeToString("foo").parse(Seq(foo, bar, baz))) {
+  "stringNode" should "consume the first node in the sequence if it has the given label and return the text that is in it" in {
+    inside(stringNode("foo").parse(Seq(foo, bar, baz))) {
       case (Success(s), nodes) =>
         s shouldBe foo.text
         nodes should (have size 2 and contain inOrderOnly(bar, baz))
@@ -47,7 +47,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   }
 
   it should "consume the first node in the sequence if it has the given label and return an empty String if the node has no content" in {
-    inside(nodeToString("bar").parse(Seq(bar, baz))) {
+    inside(stringNode("bar").parse(Seq(bar, baz))) {
       case (Success(s), nodes) =>
         s shouldBe empty
         nodes should (have size 1 and contain only baz)
@@ -56,7 +56,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
   it should "consume the first node in the sequence if it has the given label and return a concattenated String of all subnodes when this node is not a 'leave'" in {
     // @formatter:off
-    inside(nodeToString("qux").parse(Seq(<qux><foo>hello</foo><bar>world</bar></qux>, foo))) {
+    inside(stringNode("qux").parse(Seq(<qux><foo>hello</foo><bar>world</bar></qux>, foo))) {
     // @formatter:on
       case (Success(s), nodes) =>
         s shouldBe "helloworld"
@@ -75,8 +75,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
       // @formatter:on
 
     val subParser = for {
-      bars <- nodeToString("bar").many
-      baz <- nodeToString("baz")
+      bars <- stringNode("bar").many
+      baz <- stringNode("baz")
     } yield bars.mkString(" ") + baz
 
     inside(branchNode("foo")(subParser).parse(Utility.trim(input))) {
@@ -97,7 +97,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
       // @formatter:on
 
     val subParser = for {
-      bars <- nodeToString("bar").many
+      bars <- stringNode("bar").many
     } yield bars.mkString(" ")
 
     inside(branchNode("foo")(subParser).parse(Utility.trim(input))) {
@@ -124,7 +124,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     )
 
     val subParser = for {
-      bars <- nodeToString("bar").many
+      bars <- stringNode("bar").many
     } yield bars.mkString(" ")
 
     inside(branchNode("foo")(subParser).parse(input map Utility.trim)) {

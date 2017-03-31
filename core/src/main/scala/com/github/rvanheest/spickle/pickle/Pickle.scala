@@ -86,28 +86,16 @@ object Pickle {
 	}
 
 	implicit class StringOperators[State](val pickle: Pickle[String, State]) extends AnyVal {
-		def toByte: Pickle[Byte, State] = {
-			pickle.seq[Byte](_.toString).map(_.toByte)
-		}
+		def toByte: Pickle[Byte, State] = pickle.seq[Byte](_.toString).map(_.toByte)
 
-		def toShort: Pickle[Short, State] = {
-			pickle.seq[Short](_.toString).map(_.toShort)
-		}
+		def toShort: Pickle[Short, State] = pickle.seq[Short](_.toString).map(_.toShort)
 
-		def toInt: Pickle[Int, State] = {
-			pickle.seq[Int](_.toString).map(_.toInt)
-		}
+		def toInt: Pickle[Int, State] = pickle.seq[Int](_.toString).map(_.toInt)
 
-		def toLong: Pickle[Long, State] = {
-			pickle.seq[Long](_.toString).map(_.toLong)
-		}
+		def toLong: Pickle[Long, State] = pickle.seq[Long](_.toString).map(_.toLong)
 
-		def toFloat: Pickle[Float, State] = {
-			pickle.seq[Float](_.toString).map(_.toFloat)
-		}
+		def toFloat: Pickle[Float, State] = pickle.seq[Float](_.toString).map(_.toFloat)
 
-		def toDouble: Pickle[Double, State] = {
-			pickle.seq[Double](_.toString).map(_.toDouble)
-		}
+		def toDouble: Pickle[Double, State] = pickle.seq[Double](_.toString).map(_.toDouble)
 	}
 }

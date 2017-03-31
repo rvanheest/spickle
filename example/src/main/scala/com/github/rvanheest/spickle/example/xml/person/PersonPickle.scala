@@ -10,7 +10,7 @@ trait PersonPickle {
   def pickleNumber(name: String): XmlPickle[Number] = {
     for {
       addition <- attribute("addition").maybe.seq[Number](_.addition)
-      number <- string(name).seq[Number](_.number)
+      number <- stringNode(name).seq[Number](_.number)
     } yield Number(number, addition)
   }
 
@@ -18,10 +18,10 @@ trait PersonPickle {
     for {
       address <- branchNode(name) {
         for {
-          street <- string("street").seq[RealAddress](_.street)
+          street <- stringNode("street").seq[RealAddress](_.street)
           number <- pickleNumber("number").seq[RealAddress](_.number)
-          zipCode <- string("zip-code").seq[RealAddress](_.zipCode)
-          city <- string("city").seq[RealAddress](_.city)
+          zipCode <- stringNode("zip-code").seq[RealAddress](_.zipCode)
+          city <- stringNode("city").seq[RealAddress](_.city)
         } yield RealAddress(street, number, zipCode, city)
       }.seqId
     } yield address
@@ -31,9 +31,9 @@ trait PersonPickle {
     for {
       address <- branchNode(name) {
         for {
-          number <- string("freepost-number").seq[FreepostAddress](_.number)
-          zipCode <- string("zip-code").seq[FreepostAddress](_.zipCode)
-          city <- string("city").seq[FreepostAddress](_.city)
+          number <- stringNode("freepost-number").seq[FreepostAddress](_.number)
+          zipCode <- stringNode("zip-code").seq[FreepostAddress](_.zipCode)
+          city <- stringNode("city").seq[FreepostAddress](_.city)
         } yield FreepostAddress(number, zipCode, city)
       }.seqId
     } yield address
@@ -50,9 +50,9 @@ trait PersonPickle {
       _ <- namespaceAttribute("age").toInt.seq[Person](_.age)
       p <- branchNode("person") {
         for {
-          pName <- string("name").seq[Person](_.name)
+          pName <- stringNode("name").seq[Person](_.name)
           address <- pickleAddress("address").seq[Person](_.address)
-          mail <- string("mail").maybe.seq[Person](_.mail)
+          mail <- stringNode("mail").maybe.seq[Person](_.mail)
         } yield Person(pName, age, address, mail)
       }.seqId
     } yield p

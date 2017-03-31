@@ -4,7 +4,7 @@ import com.github.rvanheest.spickle.parser.xml.XmlParser
 import com.github.rvanheest.spickle.pickle.Pickle
 
 import scala.language.reflectiveCalls
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 import scala.xml._
 
 object XmlPickle {
@@ -17,10 +17,19 @@ object XmlPickle {
 			unpickle = XmlParser.node(name).map(_ => ()).parse)
 	}
 
-	def string(name: String): XmlPickle[String] = {
+	def node(name: String): XmlPickle[Node] = {
+		Pickle(
+			pickle = {
+				case (head, tail) if head.label == name => Success(head ++ tail)
+				case (head, _) => Failure(new NoSuchElementException(s"element '$head' does not contain an element with name '$name'"))
+			},
+			unpickle = XmlParser.node(name).parse)
+	}
+
+	def stringNode(name: String): XmlPickle[String] = {
 		Pickle(
 			pickle = (s: String, xml: Seq[Node]) => Try { <xml>{s}</xml>.copy(label = name) ++ xml },
-			unpickle = XmlParser.nodeToString(name).parse)
+			unpickle = XmlParser.stringNode(name).parse)
 	}
 
   def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {

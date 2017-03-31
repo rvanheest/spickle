@@ -10,7 +10,7 @@ trait PersonParser {
   def parseNumber(name: String): XmlParser[Number] = {
     for {
       addition <- attribute("addition").maybe
-      number <- nodeToString(name)
+      number <- stringNode(name)
     } yield Number(number, addition)
   }
 
@@ -19,10 +19,10 @@ trait PersonParser {
       // no attributes here
       address <- branchNode(name) {
         for {
-          street <- nodeToString("street")
+          street <- stringNode("street")
           number <- parseNumber("number")
-          zipCode <- nodeToString("zip-code")
-          city <- nodeToString("city")
+          zipCode <- stringNode("zip-code")
+          city <- stringNode("city")
         } yield RealAddress(street, number, zipCode, city)
       }
     } yield address
@@ -33,9 +33,9 @@ trait PersonParser {
       // no attributes here
       address <- branchNode(name) {
         for {
-          number <- nodeToString("freepost-number")
-          zipCode <- nodeToString("zip-code")
-          city <- nodeToString("city")
+          number <- stringNode("freepost-number")
+          zipCode <- stringNode("zip-code")
+          city <- stringNode("city")
         } yield FreepostAddress(number, zipCode, city)
       }
     } yield address
@@ -52,9 +52,9 @@ trait PersonParser {
       _ <- namespaceAttribute("age").toInt
       p <- branchNode("person") {
         for {
-          pName <- nodeToString("name")
+          pName <- stringNode("name")
           address <- parseAddress("address")
-          mail <- nodeToString("mail").maybe
+          mail <- stringNode("mail").maybe
         } yield Person(pName, age, address, mail)
       }
     } yield p

@@ -23,7 +23,7 @@ object XmlParser {
 		}
 	}
 
-	def nodeToString(name: String): XmlParser[String] = {
+	def stringNode(name: String): XmlParser[String] = {
 		node(name).map(_.text)
 	}
 
