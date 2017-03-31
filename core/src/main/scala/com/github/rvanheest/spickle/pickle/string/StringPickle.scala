@@ -12,8 +12,8 @@ object StringPickle {
 
   def item: StringPickle[Char] = {
     Pickle(
-      pickle = (c, s) => Try(c +: s),
-      unpickle = StringParser.item.parse)
+      pickler = (c, s) => Try(c +: s),
+      parser = StringParser.item)
   }
 
   def digit: StringPickle[Char] = item.satisfy(_.isDigit)
@@ -34,14 +34,14 @@ object StringPickle {
 
   def string(s: String): StringPickle[String] = {
     Pickle(
-      pickle = (str, state) =>
+      pickler = (str, state) =>
         s.toList match {
           case x :: xs => (for {
             _ <- char(x).seq[String](_.head)
             _ <- string(xs.mkString).seq[String](_.tail)
-          } yield s).pickle(str, state)
+          } yield s).pickler(str, state)
           case Nil => Try(state)
         },
-      unpickle = StringParser.string(s).parse)
+      parser = StringParser.string(s))
   }
 }

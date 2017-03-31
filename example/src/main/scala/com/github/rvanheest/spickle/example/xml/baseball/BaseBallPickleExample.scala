@@ -5,7 +5,7 @@ import scala.xml.PrettyPrinter
 
 object BaseBallPickleExample extends App with BaseBall with BaseBallXml with BaseBallPickle {
 
-  val (Success(season), rest) = pickleSeason.unpickle(xml)
+  val (Success(season), rest) = pickleSeason.parse(xml)
   val Success(seasonXml) = pickleSeason.pickle(season, Seq.empty)
 
   println(season)
