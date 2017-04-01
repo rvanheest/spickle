@@ -1,194 +1,111 @@
 package com.github.rvanheest.spickle.test.parser.string
 
 import com.github.rvanheest.spickle.parser.ParserFailedException
-import org.scalatest.{ FlatSpec, Inside, Matchers }
 import com.github.rvanheest.spickle.parser.string.StringParser._
+import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.util.{ Failure, Success }
 
-class StringParserTest extends FlatSpec with Matchers with Inside {
+class StringParserTest extends FlatSpec with Matchers {
 
   "item" should "take the first character from the input string" in {
-    inside(item.parse("abc")) {
-      case (Success(c), s) =>
-        c shouldBe 'a'
-        s shouldBe "bc"
-    }
+    item.parse("abc") should matchPattern { case (Success('a'), "bc") => }
   }
 
   it should "return a failure with a NoSuchElementException when the input string is empty" in {
-    inside(item.parse("")) {
-      case (Failure(e), s) =>
-        e shouldBe a[NoSuchElementException]
-        s shouldBe empty
-    }
+    item.parse("") should matchPattern { case (Failure(_: NoSuchElementException), "") => }
   }
 
   "digit" should "only parse the first character if it is a digit" in {
-    inside(digit.parse("1abc")) {
-      case (Success(n), s) =>
-        n shouldBe '1'
-        s shouldBe "abc"
-    }
+    digit.parse("1abc") should matchPattern { case (Success('1'), "abc") => }
   }
 
   it should "fail if the first character is not a digit" in {
-    inside(digit.parse("abc")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input 'a' is not a digit"
-    }
+    val expectedMsg = "input 'a' is not a digit"
+    digit.parse("abc") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "bc") => }
   }
 
   "number" should "parse multiple digits as long as they're digits and concat them" in {
-    inside(number.parse("1234abc")) {
-      case (Success(n), s) =>
-        n shouldBe "1234"
-        s shouldBe "abc"
-    }
+    number.parse("1234abc") should matchPattern { case (Success("1234"), "abc") => }
   }
 
   it should "fail if the first character is not a digit" in {
-    inside(number.parse("abc")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input 'a' is not a digit"
-        s shouldBe "bc"
-    }
+    val expectedMsg = "input 'a' is not a digit"
+    number.parse("abc") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "bc") => }
   }
 
   "lower" should "parse a single character from the input, provided it is a lowercase character" in {
-    inside(lower.parse("a12")) {
-      case (Success(c), s) =>
-        c shouldBe 'a'
-        s shouldBe "12"
-    }
+    lower.parse("a12") should matchPattern { case (Success('a'), "12") => }
   }
 
   it should "fail if the first character is not a lowercase character" in {
-    inside(lower.parse("Abc")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input 'A' is not a lowercase character"
-        s shouldBe "bc"
-    }
+    val expectedMsg = "input 'A' is not a lowercase character"
+    lower.parse("Abc") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "bc") => }
   }
 
   "upper" should "parse a single character from the input, provided it is an UPPERCASE letter" in {
-    inside(upper.parse("A12")) {
-      case (Success(c), s) =>
-        c shouldBe 'A'
-        s shouldBe "12"
-    }
+    upper.parse("A12") should matchPattern { case (Success('A'), "12") => }
   }
 
   it should "fail if the first character is not an uppercase character" in {
-    inside(upper.parse("aBC")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input 'a' is not an uppercase character"
-        s shouldBe "BC"
-    }
+    val expectedMsg = "input 'a' is not an uppercase character"
+    upper.parse("aBC") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "BC") => }
   }
 
   "letter" should "parse a single character from the input, provided it is a lowercase letter" in {
-    inside(letter.parse("a12")) {
-      case (Success(c), s) =>
-        c shouldBe 'a'
-        s shouldBe "12"
-    }
+    letter.parse("a12") should matchPattern { case (Success('a'), "12") => }
   }
 
   it should "parse a single character from the input, provided it is an UPPERCASE letter" in {
-    inside(letter.parse("A12")) {
-      case (Success(c), s) =>
-        c shouldBe 'A'
-        s shouldBe "12"
-    }
+    letter.parse("A12") should matchPattern { case (Success('A'), "12") => }
   }
 
   it should "fail if the first character is not a letter" in {
-    inside(letter.parse("1Bc")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input '1' is not a letter"
-        s shouldBe "Bc"
-    }
+    val expectedMsg = "input '1' is not a letter"
+    letter.parse("1Bc") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "Bc") => }
   }
 
   "alphanum" should "parse a single character from the input, provided it is a lowercase letter" in {
-    inside(alphanum.parse("a12")) {
-      case (Success(c), s) =>
-        c shouldBe 'a'
-        s shouldBe "12"
-    }
+    alphanum.parse("a12") should matchPattern { case (Success('a'), "12") => }
   }
 
   it should "parse a single character from the input, provided it is an UPPERCASE letter" in {
-    inside(alphanum.parse("A12")) {
-      case (Success(c), s) =>
-        c shouldBe 'A'
-        s shouldBe "12"
-    }
+    alphanum.parse("A12") should matchPattern { case (Success('A'), "12") => }
   }
 
   it should "parse a single character from the input, provided it is a digit" in {
-    inside(alphanum.parse("1AB")) {
-      case (Success(n), s) =>
-        n shouldBe '1'
-        s shouldBe "AB"
-    }
+    alphanum.parse("1AB") should matchPattern { case (Success('1'), "AB") => }
   }
 
   it should "fail if the first character is not an alphanumeric character" in {
-    inside(alphanum.parse("#bc")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input '#' is not an alphanumeric character"
-        s shouldBe "bc"
-    }
+    val expectedMsg = "input '#' is not an alphanumeric character"
+    alphanum.parse("#bc") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "bc") => }
   }
 
   "char" should "parse a single character from the input, provided it is the specified character" in {
-    inside(char('a').parse("abc")) {
-      case (Success(c), s) =>
-        c shouldBe 'a'
-        s shouldBe "bc"
-    }
+    char('a').parse("abc") should matchPattern { case (Success('a'), "bc") => }
   }
 
   it should "fail if the first character is not the specified character" in {
-    inside(char('a').parse("bcd")) {
-      case (Failure(ParserFailedException(msg)), s) =>
-        msg shouldBe "input 'b' is not equal to 'a'"
-        s shouldBe "cd"
-    }
+    val expectedMsg = "input 'b' is not equal to 'a'"
+    char('a').parse("bcd") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "cd") => }
   }
 
   "space" should "parse a single character from the input, provided it is a space" in {
-    inside(space.parse(" abc")) {
-      case (Success(c), s) =>
-        c shouldBe ' '
-        s shouldBe "abc"
-    }
+    space.parse(" abc") should matchPattern { case (Success(' '), "abc") => }
   }
 
   "spaces" should "skip spaces until it reaches a non-space character" in {
-    inside(spaces.parse("   abc")) {
-      case (Success(_), s) =>
-        s shouldBe "abc"
-    }
+    spaces.parse("   abc") should matchPattern { case (Success(_), "abc") => }
   }
 
   "string" should "consume a specified String from the input and return this string if it matches" in {
     val input = "abc"
-    inside(string(input).parse("abcdef")) {
-      case (Success(res), s) =>
-        res shouldBe input
-        s shouldBe "def"
-    }
+    string(input).parse("abcdef") should matchPattern { case (Success(`input`), "def") => }
   }
 
   it should "consume nothing if the empty string is given as input" in {
     val input = ""
-    inside(string(input).parse("abcdef")) {
-      case (Success(res), s) =>
-        res shouldBe input
-        s shouldBe "abcdef"
-    }
+    string(input).parse("abcdef") should matchPattern { case (Success(`input`), "abcdef") => }
   }
 }

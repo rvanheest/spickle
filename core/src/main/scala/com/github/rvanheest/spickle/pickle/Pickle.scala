@@ -21,7 +21,7 @@ class Pickle[State, A](private[pickle] val pickler: (A, State) => Try[State],
   def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Pickle[State, B] = {
     this.seq[B] {
       case a: A => a
-      case x => sys.error(s"can't cast ${ x.getClass } to ${ classTag[A] }")
+      case x => throw PickleFailedException(s"can't cast ${ x.getClass } to ${ classTag[A] }")
     }.map(identity)
   }
 

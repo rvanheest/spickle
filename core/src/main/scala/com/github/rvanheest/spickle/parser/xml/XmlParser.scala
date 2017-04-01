@@ -41,7 +41,7 @@ object XmlParser {
     Parser(ns => ns
       .headOption
       .map(head => (Try(head), ns))
-      .getOrElse((Failure(new NoSuchElementException("you're trying to parse an attribute in an empty xml Node")), Seq.empty)))
+      .getOrElse((Failure(ParserFailedException("you're trying to parse an attribute in an empty xml Node")), Seq.empty)))
   }
 
   def attribute(attr: String): XmlParser[String] = {

@@ -1,12 +1,12 @@
 package com.github.rvanheest.spickle.test.pickle
 
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
-import com.github.rvanheest.spickle.pickle.Pickle
-import org.scalatest.{ FlatSpec, Inside, Matchers }
+import com.github.rvanheest.spickle.pickle.{ Pickle, PickleFailedException }
+import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.util.{ Failure, Success, Try }
 
-class PickleTest extends FlatSpec with Matchers with Inside {
+class PickleTest extends FlatSpec with Matchers {
 
   private val emptyError = ParserFailedException("you're trying to parse a character in an empty String")
 
@@ -28,33 +28,25 @@ class PickleTest extends FlatSpec with Matchers with Inside {
     }))
 
   "pickle" should "run the pickler function in the Pickler" in {
-    inside(point.pickle(1, "23")) {
-      case Success(s) => s shouldBe "123"
-    }
+    point.pickle(1, "23") should matchPattern { case Success("123") => }
   }
 
   "parse" should "run the parser function in the Pickler" in {
-    inside(point.parse("123")) {
-      case (Success(i), s) =>
-        i shouldBe 1
-        s shouldBe "23"
-    }
+    point.parse("123") should matchPattern { case (Success(1), "23") => }
   }
 
   case class IntWrapper(i: Int)
 
   "seq map" should "unpack the integer and concat it to the rest of the input" in {
-    inside(point.seq[IntWrapper](_.i).map(IntWrapper).pickle(IntWrapper(1), "234")) {
-      case Success(s) => s shouldBe "1234"
-    }
+    point.seq[IntWrapper](_.i)
+      .map(IntWrapper)
+      .pickle(IntWrapper(1), "234") should matchPattern { case Success("1234") => }
   }
 
   it should "pack the first character up into the IntWrapper" in {
-    inside(point.seq[IntWrapper](_.i).map(IntWrapper).parse("1234")) {
-      case (Success(IntWrapper(i)), s) =>
-        i shouldBe 1
-        s shouldBe "234"
-    }
+    point.seq[IntWrapper](_.i)
+      .map(IntWrapper)
+      .parse("1234") should matchPattern { case (Success(IntWrapper(1)), "234") => }
   }
 
   it should "not use the unpack function while parsing" in {
@@ -68,9 +60,9 @@ class PickleTest extends FlatSpec with Matchers with Inside {
 
   it should "fail if the unpack function throws an exception" in {
     val err = new Exception("err")
-    inside(point.seq[IntWrapper](_ => throw err).map(IntWrapper).pickle(IntWrapper(1), "234")) {
-      case Failure(e) => e shouldBe err
-    }
+    point.seq[IntWrapper](_ => throw err)
+      .map(IntWrapper)
+      .pickle(IntWrapper(1), "234") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the original Pickler if the unpack function throws an exception" in {
@@ -86,9 +78,10 @@ class PickleTest extends FlatSpec with Matchers with Inside {
 
   it should "fail if the original Pickler fails" in {
     val err = new Exception("err")
-    inside(pointWithSideEffect(() => throw err).seq[IntWrapper](_.i).map(IntWrapper).pickle(IntWrapper(1), "234")) {
-      case Failure(e) => e shouldBe err
-    }
+    pointWithSideEffect(() => throw err)
+      .seq[IntWrapper](_.i)
+      .map(IntWrapper)
+      .pickle(IntWrapper(1), "234") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not use the map function when pickling" in {
@@ -104,22 +97,15 @@ class PickleTest extends FlatSpec with Matchers with Inside {
   case class IntTupleWrapper(i1: Int, i2: Int)
 
   "seq flatMap" should "unpack the integers and concat them to the rest of the input" in {
-    inside(point.seq[IntTupleWrapper](_.i1)
+    point.seq[IntTupleWrapper](_.i1)
       .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34")) {
-      case Success(s) => s shouldBe "1234"
-    }
+      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Success("1234") => }
   }
 
   it should "pack the first two characters up into the IntTupleWrapper" in {
-    inside(point.seq[IntTupleWrapper](_.i1)
+    point.seq[IntTupleWrapper](_.i1)
       .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
-      .parse("1234")) {
-      case (Success(IntTupleWrapper(i1, i2)), s) =>
-        i1 shouldBe 1
-        i2 shouldBe 2
-        s shouldBe "34"
-    }
+      .parse("1234") should matchPattern { case (Success(IntTupleWrapper(1, 2)), "34") => }
   }
 
   it should "not use the unpack functions while parsing" in {
@@ -138,11 +124,9 @@ class PickleTest extends FlatSpec with Matchers with Inside {
 
   it should "fail if the unpack function throws an exception" in {
     val err = new Exception("err")
-    inside(point.seq[IntTupleWrapper](w => { throw err; w.i1 })
+    point.seq[IntTupleWrapper](w => { throw err; w.i1 })
       .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34")) {
-      case Failure(e) => e shouldBe err
-    }
+      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the flatMap function if the unpack function throws an exception" in {
@@ -171,14 +155,12 @@ class PickleTest extends FlatSpec with Matchers with Inside {
 
   it should "fail if the flatMap function throws an exception" in {
     val err = new Exception("err")
-    inside(point.seq[IntTupleWrapper](_.i1)
+    point.seq[IntTupleWrapper](_.i1)
       .flatMap(i1 => {
         throw err
         point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _))
       })
-      .pickle(IntTupleWrapper(1, 2), "34")) {
-      case Failure(e) => e shouldBe err
-    }
+      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the original Pickler if the flatMap function throws an exception" in {
@@ -196,12 +178,10 @@ class PickleTest extends FlatSpec with Matchers with Inside {
 
   it should "fail if the original Pickler fails" in {
     val err = new Exception("err")
-    inside(pointWithSideEffect(() => throw err).seq[IntTupleWrapper](_.i1)
+    pointWithSideEffect(() => throw err).seq[IntTupleWrapper](_.i1)
       .flatMap(i1 => point.seq[IntTupleWrapper](_.i2)
         .map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34")) {
-      case Failure(e) => e shouldBe err
-    }
+      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   class A()
@@ -218,15 +198,14 @@ class PickleTest extends FlatSpec with Matchers with Inside {
     import scala.reflect.classTag
     val pickleB: Pickle[String, B] = Pickle.from(new B())
     val pickleA: Pickle[String, A] = pickleB.upcast[A]
-    inside(pickleA.pickle(new C(), "abc")) {
-      case Failure(e) => e.getMessage shouldBe s"can't cast ${ classOf[C] } to ${ classTag[B] }"
+    val expectedMsg = s"can't cast ${ classOf[C] } to ${ classTag[B] }"
+    pickleA.pickle(new C(), "abc") should matchPattern {
+      case Failure(PickleFailedException(`expectedMsg`)) =>
     }
   }
 
   "orElse" should "use the first pickler if this one succeeds" in {
-    inside(point.orElse(Pickle.from(1)).pickle(1, "23")) {
-      case Success(s) => s shouldBe "123"
-    }
+    point.orElse(Pickle.from(1)).pickle(1, "23") should matchPattern { case Success("123") => }
   }
 
   it should "not use the second pickler if the first one succeeds" in {
@@ -239,9 +218,9 @@ class PickleTest extends FlatSpec with Matchers with Inside {
 
   it should "use the second pickler if the first one fails" in {
     val err = new Exception("err")
-    inside(pointWithSideEffect(() => throw err).orElse(Pickle.from(99)).pickle(1, "23")) {
-      case Success(s) => s shouldBe "23"
-    }
+    pointWithSideEffect(() => throw err)
+      .orElse(Pickle.from(99))
+      .pickle(1, "23") should matchPattern { case Success("23") => }
   }
 
   it should "not compile when the picklers do not have the exact same type (super-sub-types)" in {
@@ -290,5 +269,9 @@ class PickleTest extends FlatSpec with Matchers with Inside {
       |val pC = Pickle.from(new C())
       |pB.upcast[A].orElse(pC.upcast[A])
     """.stripMargin should compile
+  }
+
+  "satisfy" should "run the original pickler if the input satisfies the predicate" in {
+    point.satisfy(_ % 2 == 0).pickle(2, "34") should matchPattern { case Success("234") => }
   }
 }
