@@ -1,7 +1,7 @@
 package com.github.rvanheest.spickle.pickle.xml
 
 import com.github.rvanheest.spickle.parser.xml.XmlParser
-import com.github.rvanheest.spickle.pickle.Pickle
+import com.github.rvanheest.spickle.pickle.{ Pickle, PickleFailedException }
 
 import scala.language.reflectiveCalls
 import scala.util.{ Failure, Success, Try }
@@ -34,7 +34,7 @@ object XmlPickle {
 
   def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
     Pickle(
-      pickler = (a: A, xml: Seq[Node]) => pickleA.pickler(a, Nil).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml),
+      pickler = (a: A, xml: Seq[Node]) => pickleA.pickler(a, NodeSeq.Empty).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml),
       parser = XmlParser.branchNode(name)(pickleA.parser))
   }
 
@@ -43,8 +43,8 @@ object XmlPickle {
       pickler = (s: String, xml: Seq[Node]) => Try {
         xml.headOption map {
           case elem: Elem => elem % new UnprefixedAttribute(name, s, Null) ++ xml.tail
-          case _ => sys.error("Can only add attributes to elements!")
-        } getOrElse sys.error("Cannot add attributes to an empty sequence")
+          case x => throw PickleFailedException(s"Can only add an attribute with name '$name' to elements: $x")
+        } getOrElse (throw PickleFailedException(s"Cannot add an attribute with name '$name' to an empty node sequence"))
       },
       parser = XmlParser.attribute(name))
   }
@@ -54,8 +54,8 @@ object XmlPickle {
       pickler = (s: String, xml: Seq[Node]) => Try {
         xml.headOption map {
           case elem: Elem => elem % new PrefixedAttribute(namespace.prefix, name, s, Null) ++ xml.tail
-          case _ => sys.error("Can only add attributes to elements!")
-        } getOrElse sys.error("Cannot add attributes to an empty sequence")
+          case x => throw PickleFailedException(s"Can only add an attribute with name '${namespace.prefix}:$name' to elements: $x")
+        } getOrElse (throw PickleFailedException(s"Cannot add an attribute with name '${namespace.prefix}:$name' to an empty node sequence"))
       },
       parser = XmlParser.namespaceAttribute(name))
   }

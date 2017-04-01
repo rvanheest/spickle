@@ -15,7 +15,7 @@ class XmlParserTest extends FlatSpec with Matchers {
 
   "node" should "consume the first node in the sequence and return it if its label is equal to the given String" in {
     node("foo").parse(Seq(foo, bar, baz)) should matchPattern {
-      case (Success(<foo>test</foo>), Seq(`bar`, `baz`)) =>
+      case (Success(`foo`), Seq(`bar`, `baz`)) =>
     }
   }
 
