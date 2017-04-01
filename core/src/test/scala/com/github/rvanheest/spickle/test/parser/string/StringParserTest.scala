@@ -47,7 +47,7 @@ class StringParserTest extends FlatSpec with Matchers {
     upper.parse("A12") should matchPattern { case (Success('A'), "12") => }
   }
 
-  it should "fail if the first character is not an uppercase character" in {
+  it should "fail if the first character is not an UPPERCASE character" in {
     val expectedMsg = "input 'a' is not an uppercase character"
     upper.parse("aBC") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "BC") => }
   }

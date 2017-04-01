@@ -109,11 +109,11 @@ object Parser {
 
   def failure[S, A](e: Throwable): Parser[S, A] = Parser((Failure(e), _))
 
-  def debugAndFail[S](pos: String = ""): Parser[S, Nothing] = {
+  def debugAndFail[S](pos: String): Parser[S, Nothing] = {
     Parser(xs => sys.error(s"you hit a debug statement at $pos: $xs"))
   }
 
-  def debugAndContinue[S](pos: String = ""): Parser[S, Unit] = {
+  def debugAndContinue[S](pos: String): Parser[S, Unit] = {
     Parser(xs => {
       println(s"you hit a debug statement at $pos: $xs")
       (Success(()), xs)

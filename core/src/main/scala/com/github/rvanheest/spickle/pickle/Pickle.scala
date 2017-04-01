@@ -93,17 +93,38 @@ object Pickle {
     new Pickle(pickler, parser)
   }
 
-  def from[State, A](a: A): Pickle[State, A] = Pickle(
-    pickler = (_, state) => Try { state },
-    parser = Parser.from(a))
+  def from[State, A](a: A): Pickle[State, A] = {
+    Pickle(
+      pickler = (_, state) => Try { state },
+      parser = Parser.from(a))
+  }
 
-  def empty[State, A]: Pickle[State, A] = Pickle(
-    pickler = (_, _) => Failure(new NoSuchElementException("empty parser")),
-    parser = Parser.empty)
+  def empty[State, A]: Pickle[State, A] = {
+    Pickle(
+      pickler = (_, _) => Failure(new NoSuchElementException("empty parser")),
+      parser = Parser.empty)
+  }
 
-  def failure[State, A](e: Throwable): Pickle[State, A] = Pickle(
-    pickler = (_, _) => Failure(e),
-    parser = Parser.failure(e))
+  def failure[State, A](e: Throwable): Pickle[State, A] = {
+    Pickle(
+      pickler = (_, _) => Failure(e),
+      parser = Parser.failure(e))
+  }
+
+  def debugAndFail[State](pos: String): Pickle[State, Nothing] = {
+    Pickle[State, Nothing](
+      pickler = (_, state) => sys.error(s"you hit a debug statement at $pos: $state"),
+      parser = Parser.debugAndFail(pos))
+  }
+
+  def debugAndContinue[State](pos: String): Pickle[State, Unit] = {
+    Pickle(
+      pickler = (a, state) => Try {
+        println(s"you hit a debug statement at $pos while pickling $a with state $state")
+        state
+      },
+      parser = Parser.debugAndContinue(pos))
+  }
 
   implicit class StringOperators[State](val pickle: Pickle[State, String]) extends AnyVal {
     def toByte: Pickle[State, Byte] = pickle.seq[Byte](_.toString).map(_.toByte)
