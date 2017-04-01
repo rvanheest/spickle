@@ -1,6 +1,6 @@
 package com.github.rvanheest.spickle.pickle
 
-import com.github.rvanheest.spickle.parser.Parser
+import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 
 import scala.language.higherKinds
 import scala.reflect.{ ClassTag, classTag }
@@ -32,13 +32,19 @@ class Pickle[State, A](private[pickle] val pickler: (A, State) => Try[State],
   }
 
   def satisfy(predicate: A => Boolean): Pickle[State, A] = {
-    Pickle(
-      pickler = (a, state) => if (predicate(a)) this.pickler(a, state)
-                              else Failure(new NoSuchElementException("empty pickle")),
-      parser = this.parser.satisfy(predicate))
+    this.satisfy(predicate, a => s"input '$a' did not satisfy predicate")
   }
 
-  def noneOf(as: Seq[A]): Pickle[State, A] = satisfy(!as.contains(_))
+  def satisfy(predicate: A => Boolean, errMsg: A => String): Pickle[State, A] = {
+    Pickle(
+      pickler = (a, state) => if (predicate(a)) this.pickler(a, state)
+                              else Failure(PickleFailedException(errMsg(a))),
+      parser = this.parser.satisfy(predicate, errMsg))
+  }
+
+  def noneOf(as: Seq[A]): Pickle[State, A] = {
+    this.satisfy(!as.contains(_), a => s"input '$a' is contained in ${ as.mkString("[", ", ", "]") }")
+  }
 
   def maybe: Pickle[State, Option[A]] = {
     Pickle(
@@ -89,8 +95,15 @@ object Pickle {
 
   def from[State, A](a: A): Pickle[State, A] = Pickle(
     pickler = (_, state) => Try { state },
-    parser = Parser.from(a)
-  )
+    parser = Parser.from(a))
+
+  def empty[State, A]: Pickle[State, A] = Pickle(
+    pickler = (_, _) => Failure(new NoSuchElementException("empty parser")),
+    parser = Parser.empty)
+
+  def failure[State, A](e: Throwable): Pickle[State, A] = Pickle(
+    pickler = (_, _) => Failure(e),
+    parser = Parser.failure(e))
 
   implicit class StringOperators[State](val pickle: Pickle[State, String]) extends AnyVal {
     def toByte: Pickle[State, Byte] = pickle.seq[Byte](_.toString).map(_.toByte)

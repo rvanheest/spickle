@@ -130,7 +130,7 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   it should "create a parser that fails when the value is in the given list" in {
-    val expectedMsg = "input '1' did contain any of [0, 1, 2]"
+    val expectedMsg = "input '1' is contained in [0, 1, 2]"
 
     point.noneOf(List(0, 1, 2))
       .parse("123") should matchPattern { case (Failure(ParserFailedException(`expectedMsg`)), "23") => }

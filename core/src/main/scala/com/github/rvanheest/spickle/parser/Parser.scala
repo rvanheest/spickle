@@ -61,14 +61,14 @@ class Parser[S, A](val parse: S => (Try[A], S)) {
   }
 
   def satisfy(predicate: A => Boolean, errMsg: A => String): Parser[S, A] = {
-    this >>= (x => if (predicate(x)) Parser.from(x)
-                   else Parser.failure(ParserFailedException(errMsg(x))))
+    this >>= (a => if (predicate(a)) Parser.from(a)
+                   else Parser.failure(ParserFailedException(errMsg(a))))
   }
 
   def filter(predicate: A => Boolean): Parser[S, A] = this.satisfy(predicate)
 
   def noneOf(as: Seq[A]): Parser[S, A] = {
-    this.satisfy(!as.contains(_), a => s"input '$a' did contain any of ${ as.mkString("[", ", ", "]") }")
+    this.satisfy(!as.contains(_), a => s"input '$a' is contained in ${ as.mkString("[", ", ", "]") }")
   }
 
   def maybe: Parser[S, Option[A]] = this.map(Option(_)) <|> Parser.from(Option.empty)
@@ -105,7 +105,7 @@ object Parser {
 
   def from[S, A](a: A): Parser[S, A] = Parser((Success(a), _))
 
-  def empty[S, A]: Parser[S, A] = Parser((Failure(new NoSuchElementException("empty parser")), _))
+  def empty[S, A]: Parser[S, A] = Parser.failure(new NoSuchElementException("empty parser"))
 
   def failure[S, A](e: Throwable): Parser[S, A] = Parser((Failure(e), _))
 

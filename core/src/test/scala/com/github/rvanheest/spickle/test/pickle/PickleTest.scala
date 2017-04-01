@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.test.pickle
 
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
+import com.github.rvanheest.spickle.pickle.string.StringPickle
 import com.github.rvanheest.spickle.pickle.{ Pickle, PickleFailedException }
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -273,5 +274,106 @@ class PickleTest extends FlatSpec with Matchers {
 
   "satisfy" should "run the original pickler if the input satisfies the predicate" in {
     point.satisfy(_ % 2 == 0).pickle(2, "34") should matchPattern { case Success("234") => }
+  }
+
+  it should "fail if the predicate does not satisfy" in {
+    val expectedMsg = "input '1' did not satisfy predicate"
+
+    point.satisfy(_ % 2 == 0).pickle(1, "234") should matchPattern {
+      case Failure(PickleFailedException(`expectedMsg`)) =>
+    }
+  }
+
+  "noneOf" should "succeed if the input does not contain any elements in the given list" in {
+    point.noneOf(Seq(2, 3, 4)).pickle(1, "234") should matchPattern { case Success("1234") => }
+  }
+
+  it should "fail if the input is an element contained in the given list" in {
+    val expectedMsg = "input '1' is contained in [1, 2, 3]"
+
+    point.noneOf(Seq(1, 2, 3)).pickle(1, "234") should matchPattern {
+      case Failure(PickleFailedException(`expectedMsg`)) =>
+    }
+  }
+
+  "maybe" should "run the original Pickler when the input is a Some" in {
+    var visited = false
+
+    pointWithSideEffect(() => visited = true)
+      .maybe
+      .pickle(Some(2), "345") should matchPattern { case Success("2345") => }
+    visited shouldBe true
+  }
+
+  it should "not run the original Pickler when the input is a None" in {
+    var notVisited = true
+
+    pointWithSideEffect(() => notVisited = false)
+      .maybe
+      .pickle(None, "345") should matchPattern { case Success("345") => }
+    notVisited shouldBe true
+  }
+
+  "many" should "apply the original Pickler as many times as the input list is long" in {
+    point.many.pickle(List(1, 2, 3), "45") should matchPattern { case Success("12345") => }
+  }
+
+  it should "not apply and return the initial state when the input list is empty" in {
+    point.many.pickle(Nil, "45") should matchPattern { case Success("45") => }
+  }
+
+  it should "stop the pickler as soon as it fails" in {
+    val err = new Exception("err")
+    var count = 0
+    pointWithSideEffect(() => { count += 1; if (count == 3) throw err })
+      .many
+      .pickle(List(1, 2, 3, 4, 5), "67") should matchPattern { case Failure(`err`) => }
+    count shouldBe 3
+  }
+
+  "atLeastOnce" should "apply the original Pickler as many times as the input list is long" in {
+    point.atLeastOnce.pickle(List(1, 2, 3), "45") should matchPattern { case Success("12345") => }
+  }
+
+  it should "succeed if the input list has only one element" in {
+    point.atLeastOnce.pickle(List(1), "23") should matchPattern { case Success("123") => }
+  }
+
+  it should "fail on an empty input" in {
+    point.atLeastOnce.pickle(Nil, "45") should matchPattern { case Failure(_: NoSuchElementException) => }
+  }
+
+  "takeUntil" should "succeed if all elements in the input list do satisfy the negate of the given predicate" in {
+    point.takeUntil(_ % 2 == 0).pickle(List(1, 3, 5), "abc") should matchPattern { case Success("135abc") => }
+  }
+
+  it should "fail if any of the elements in the input list do satisfy the negate of the given predicate" in {
+    val expectedMsg = "input '6' did not satisfy predicate"
+    point.takeUntil(_ % 2 == 0).pickle(List(1, 3, 5, 6), "abc") should matchPattern { case Failure(PickleFailedException(`expectedMsg`)) => }
+  }
+
+  "takeWhile" should "succeed if all elements in the input list do satisfy the given predicate" in {
+    point.takeWhile(_ % 2 == 0).pickle(List(2, 4, 6), "abc") should matchPattern { case Success("246abc") => }
+  }
+
+  it should "fail if any of the elements in the input list do satisfy the given predicate" in {
+    val expectedMsg = "input '7' did not satisfy predicate"
+    point.takeWhile(_ % 2 == 0).pickle(List(2, 4, 6, 7), "abc") should matchPattern { case Failure(PickleFailedException(`expectedMsg`)) => }
+  }
+
+  "separatedBy" should "construct a string with the separator between the characters" in {
+    point.separatedBy('-')(StringPickle.char('-')).pickle(List(1, 2, 3), "abc") should matchPattern { case Success("1-2-3abc") => }
+  }
+
+  it should "return the initial state when the input list is empty" in {
+    point.separatedBy('-')(StringPickle.char('-')).pickle(Nil, "abc") should matchPattern { case Success("abc") => }
+  }
+
+  "separatedBy1" should "construct a string with the separator between the characters" in {
+    point.separatedBy1('-')(StringPickle.char('-')).pickle(List(1, 2, 3), "abc") should matchPattern { case Success("1-2-3abc") => }
+  }
+
+  it should "fail when the input list is empty" in {
+    point.separatedBy1('-')(StringPickle.char('-')).pickle(Nil, "abc") should matchPattern { case Failure(_: NoSuchElementException) => }
   }
 }
