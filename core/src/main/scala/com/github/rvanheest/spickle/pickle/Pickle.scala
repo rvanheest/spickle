@@ -1,12 +1,10 @@
 package com.github.rvanheest.spickle.pickle
 
-import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
+import com.github.rvanheest.spickle.parser.Parser
 
-import scala.language.higherKinds
 import scala.reflect.{ ClassTag, classTag }
 import scala.util.{ Failure, Try }
 
-// TODO improve error messages
 class Pickle[State, A](private[pickle] val pickler: (A, State) => Try[State],
                        private[pickle] val parser: Parser[State, A]) {
 

@@ -2,7 +2,9 @@ package com.github.rvanheest.spickle.parser
 
 import scala.util.{ Failure, Success, Try }
 
-class Parser[S, A](val parse: S => (Try[A], S)) {
+class Parser[S, A](private[parser] val parser: S => (Try[A], S)) {
+
+  def parse(state: S): (Try[A], S) = parser(state)
 
   def eval(s: S): Try[A] = parse(s)._1
 
