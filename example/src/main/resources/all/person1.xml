@@ -1,0 +1,18 @@
+<persons xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="person.xsd">
+    <person>
+        <firstname>richard</firstname>
+        <lastname>van Heest</lastname>
+        <age>25</age>
+    </person>
+    <person>
+        <lastname>boon</lastname>
+        <firstname>paul</firstname>
+        <age>50</age>
+    </person>
+    <person>
+        <age>40</age>
+        <lastname>pol</lastname>
+        <firstname>joke</firstname>
+    </person>
+</persons>

@@ -1,13 +1,14 @@
 package com.github.rvanheest.spickle.test.parser.xml
 
 import com.github.rvanheest.spickle.parser.ParserFailedException
-import com.github.rvanheest.spickle.parser.xml.XmlParser._
-import org.scalatest.{ FlatSpec, Matchers }
+import com.github.rvanheest.spickle.parser.xml.XmlParser
+import com.github.rvanheest.spickle.parser.xml.XmlParser.{ stringNode, _ }
+import org.scalatest.{ FlatSpec, Inside, Matchers }
 
 import scala.util.{ Failure, Success }
 import scala.xml.{ NamespaceBinding, TopScope, Utility }
 
-class XmlParserTest extends FlatSpec with Matchers {
+class XmlParserTest extends FlatSpec with Matchers with Inside {
 
   private val foo = <foo>test</foo>
   private val bar = <bar/>
@@ -189,5 +190,191 @@ class XmlParserTest extends FlatSpec with Matchers {
     namespaceAttribute("type").parse(input) should matchPattern {
       case (Failure(ParserFailedException(`expectedMsg`)), `input`) =>
     }
+  }
+
+  "any2" should "parse a list of xml nodes in the order in which the parsers are defined" in {
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    result should matchPattern { case Success((Some("blabla"), Some("albalb"))) => }
+    remainder shouldBe empty
+  }
+
+  it should "parse a list of xml nodes in reversed order" in {
+    val input = Utility.trim(
+      <foo>
+        <def>albalb</def>
+        <abc>blabla</abc>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    result should matchPattern { case Success((Some("blabla"), Some("albalb"))) => }
+    remainder shouldBe empty
+  }
+
+  it should "fail when multiple elements of the same type are found" in {
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+        <abc>xyzuvw</abc>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    inside(result) {
+      case Failure(ParserFailedException(msg)) =>
+        msg shouldBe "remaining elements found in any"
+    }
+    remainder should contain only <abc>xyzuvw</abc>
+  }
+
+  it should "fail if the first element is unknown" in {
+    val input = Utility.trim(
+      <foo>
+        <ghi>xyzxyz</ghi>
+        <abc>blabla</abc>
+        <def>albalb</def>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    inside(result) {
+      case Failure(ParserFailedException(msg)) =>
+        msg shouldBe "remaining elements found in any"
+    }
+    remainder should contain only <ghi>xyzxyz</ghi>
+  }
+
+  it should "fail if the second element is unknown" in {
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <ghi>xyzxyz</ghi>
+        <def>albalb</def>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    inside(result) {
+      case Failure(ParserFailedException(msg)) =>
+        msg shouldBe "remaining elements found in any"
+    }
+    remainder should contain only <ghi>xyzxyz</ghi>
+  }
+
+  it should "fail if the second element is unknown when the stuff is in reversed order" in {
+    val input = Utility.trim(
+      <foo>
+        <def>albalb</def>
+        <ghi>xyzxyz</ghi>
+        <abc>blabla</abc>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    inside(result) {
+      case Failure(ParserFailedException(msg)) =>
+        msg shouldBe "remaining elements found in any"
+    }
+    remainder should contain only <ghi>xyzxyz</ghi>
+  }
+
+  it should "fail if the last element is unknown" in {
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+        <ghi>xyzxyz</ghi>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    inside(result) {
+      case Failure(ParserFailedException(msg)) =>
+        msg shouldBe "remaining elements found in any"
+    }
+    remainder should contain only <ghi>xyzxyz</ghi>
+  }
+
+  it should "fail if a mandatory element is missing" in {
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val combined = XmlParser.all(abcParser, defParser)(mandatory, mandatory)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    inside(result) {
+      case Failure(ParserFailedException(msg)) =>
+        msg shouldBe "missing mandatory element in any"
+    }
+    remainder shouldBe empty
+  }
+
+  "any3" should "parse a list of xml nodes in the order in which the parsers are defined" in {
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+        <ghi>xyzxyz</ghi>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val ghiParser = stringNode("ghi")
+    val combined = XmlParser.all(abcParser, defParser, ghiParser)(optional, optional, optional)
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    result should matchPattern { case Success((Some("blabla"), Some("albalb"), Some("xyzxyz"))) => }
+    remainder shouldBe empty
   }
 }
