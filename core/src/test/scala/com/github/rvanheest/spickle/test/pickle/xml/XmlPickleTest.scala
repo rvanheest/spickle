@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.test.pickle.xml
 
 import com.github.rvanheest.spickle.pickle.PickleFailedException
+import com.github.rvanheest.spickle.pickle.xml.XmlPickle
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
@@ -126,6 +127,66 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").pickle("simple", Comment("hello")) should matchPattern {
       case Failure(PickleFailedException("Can only add an attribute with name 'xlink:type' to elements: <!--hello-->")) =>
+    }
+  }
+
+  "all2" should "turn an all of (present) optional objects to xml" in {
+    val abcPickle = stringNode("abc")
+    val defPickle = stringNode("def")
+    val combined = XmlPickle.all(abcPickle, defPickle)(optional, optional)
+    val fooPickle = branchNode("foo")(combined)
+
+    val output = <foo><abc>blabla</abc><def>albalb</def></foo>
+    fooPickle.pickle((Some("blabla"), Some("albalb")), NodeSeq.Empty) should matchPattern {
+      case Success(Seq(`output`)) =>
+    }
+  }
+
+  it should "turn an all of (present) optional and mandatory objects to xml" in {
+    val abcPickle = stringNode("abc")
+    val defPickle = stringNode("def")
+    val combined = XmlPickle.all(abcPickle, defPickle)(optional, mandatory)
+    val fooPickle = branchNode("foo")(combined)
+
+    val output = <foo><abc>blabla</abc><def>albalb</def></foo>
+    fooPickle.pickle((Some("blabla"), "albalb"), NodeSeq.Empty) should matchPattern {
+      case Success(Seq(`output`)) =>
+    }
+  }
+
+  it should "turn an all of (absent) optional and mandatory objects to xml" in {
+    val abcPickle = stringNode("abc")
+    val defPickle = stringNode("def")
+    val combined = XmlPickle.all(abcPickle, defPickle)(optional, mandatory)
+    val fooPickle = branchNode("foo")(combined)
+
+    val output = <foo><def>albalb</def></foo>
+    fooPickle.pickle((None, "albalb"), NodeSeq.Empty) should matchPattern {
+      case Success(Seq(`output`)) =>
+    }
+  }
+
+  it should "turn an all of mandatory objects to xml" in {
+    val abcPickle = stringNode("abc")
+    val defPickle = stringNode("def")
+    val combined = XmlPickle.all(abcPickle, defPickle)(mandatory, mandatory)
+    val fooPickle = branchNode("foo")(combined)
+
+    val output = <foo><abc>blabla</abc><def>albalb</def></foo>
+    fooPickle.pickle(("blabla", "albalb"), NodeSeq.Empty) should matchPattern {
+      case Success(Seq(`output`)) =>
+    }
+  }
+
+  it should "turn an all of (absent) optional objects to xml" in {
+    val abcPickle = stringNode("abc")
+    val defPickle = stringNode("def")
+    val combined = XmlPickle.all(abcPickle, defPickle)(optional, optional)
+    val fooPickle = branchNode("foo")(combined)
+
+    val output = <foo></foo>
+    fooPickle.pickle((None, None), NodeSeq.Empty) should matchPattern {
+      case Success(Seq(`output`)) =>
     }
   }
 }

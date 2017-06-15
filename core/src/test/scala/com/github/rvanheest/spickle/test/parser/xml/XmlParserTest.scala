@@ -192,7 +192,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "any2" should "parse a list of xml nodes in the order in which the parsers are defined" in {
+  "all2" should "parse a list of xml nodes in the order in which the parsers are defined" in {
     val input = Utility.trim(
       <foo>
         <abc>blabla</abc>
@@ -358,7 +358,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     remainder shouldBe empty
   }
 
-  "any3" should "parse a list of xml nodes in the order in which the parsers are defined" in {
+  "all3" should "parse a list of xml nodes in the order in which the parsers are defined" in {
     val input = Utility.trim(
       <foo>
         <abc>blabla</abc>
