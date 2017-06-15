@@ -1,6 +1,6 @@
-package com.github.rvanheest.spickle.example.xml.any
+package com.github.rvanheest.spickle.example.xml.all
 
-import java.nio.file.{ Files, Paths }
+import java.nio.file.Paths
 
 import scala.xml.{ Utility, XML }
 

@@ -1,8 +1,6 @@
-package com.github.rvanheest.spickle.example.xml.any
+package com.github.rvanheest.spickle.example.xml.all
 
-import com.github.rvanheest.spickle.parser.Parser
-import com.github.rvanheest.spickle.parser.xml.XmlParser.XmlParser
-import com.github.rvanheest.spickle.parser.xml.XmlParser._
+import com.github.rvanheest.spickle.parser.xml.XmlParser.{ XmlParser, _ }
 
 object PersonParser {
   case class Person(firstName: String, lastName: String, age: Int)
