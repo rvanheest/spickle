@@ -11,11 +11,9 @@ class Parser[S, A](private[parser] val parser: S => (Try[A], S)) {
   def execute(s: S): S = parse(s)._2
 
   def orElse[B >: A](other: => Parser[S, B]): Parser[S, B] = {
-    Parser(st => {
-      parse(st) match {
-        case res @ (Success(_), _) => res
-        case (Failure(_), _) => other.parse(st)
-      }
+    Parser(st => parse(st) match {
+      case res @ (Success(_), _) => res
+      case (Failure(_), _) => other.parse(st)
     })
   }
 
@@ -24,7 +22,7 @@ class Parser[S, A](private[parser] val parser: S => (Try[A], S)) {
   def map[B](f: A => B): Parser[S, B] = {
     Parser(st => {
       parse(st) match {
-        case (Success(a), st2) => (Success(f(a)), st2)
+        case (Success(a), st2) => (Try(f(a)), st2)
         case (Failure(e), st2) => (Failure(e), st2)
       }
     })

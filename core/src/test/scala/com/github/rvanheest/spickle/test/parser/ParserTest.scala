@@ -72,6 +72,10 @@ class ParserTest extends FlatSpec with Matchers {
     notVisited shouldBe true
   }
 
+  it should "fail if the function in map throws an exception" in {
+    point.map(i => i / 0).parse("123") should matchPattern { case (Failure(_: ArithmeticException), "23") => }
+  }
+
   "flatMap" should "apply the function in flatMap when the parser returns a success" in {
     point.flatMap(i => point.map(10 * i +))
       .parse("123") should matchPattern { case (Success(12), "3") => }
