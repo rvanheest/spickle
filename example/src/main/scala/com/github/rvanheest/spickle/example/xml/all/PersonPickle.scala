@@ -19,5 +19,16 @@ object PersonPickle {
     branchNode("person")(picklePersonContent.seq[Person](person => (person.firstName, person.lastName, person.age)).map(Person.tupled))
   }
 
-  def picklePersons: XmlPickle[Seq[Person]] = branchNode("persons")(picklePerson.many)
+  def pickleSomeNumbers: XmlPickle[Seq[Int]] = {
+    stringNode("somenumbers")
+      .seq[Seq[Int]](_.mkString(" "))
+      .map(_.split(" ").map(_.toInt))
+  }
+
+  def picklePersons: XmlPickle[(Seq[Person], Seq[Int])] = branchNode("persons") {
+    for {
+      persons <- picklePerson.many.seq[(Seq[Person], Seq[Int])](_._1)
+      numbers <- pickleSomeNumbers.seq[(Seq[Person], Seq[Int])](_._2)
+    } yield (persons, numbers)
+  }
 }

@@ -1,6 +1,10 @@
 package com.github.rvanheest.spickle.example.xml.all
 
+import com.github.rvanheest.spickle.parser.Parser
+import com.github.rvanheest.spickle.parser.string.StringParser
 import com.github.rvanheest.spickle.parser.xml.XmlParser.{ XmlParser, _ }
+
+import scala.util.{ Failure, Success }
 
 object PersonParser {
   case class Person(firstName: String, lastName: String, age: Int)
@@ -19,5 +23,15 @@ object PersonParser {
     branchNode("person")(parsePersonContent.map(Person.tupled))
   }
 
-  def parsePersons: XmlParser[Seq[Person]] = branchNode("persons")(parsePerson.many)
+  def parseSomeNumbers: XmlParser[Seq[Int]] = {
+    stringNode("somenumbers")
+      .map(_.split(" ").map(_.toInt))
+  }
+
+  def parsePersons: XmlParser[(Seq[Person], Seq[Int])] = branchNode("persons") {
+    for {
+      persons <- parsePerson.many
+      numbers <- parseSomeNumbers
+    } yield (persons, numbers)
+  }
 }
