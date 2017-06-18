@@ -1,10 +1,6 @@
 package com.github.rvanheest.spickle.example.xml.all
 
-import com.github.rvanheest.spickle.parser.Parser
-import com.github.rvanheest.spickle.parser.string.StringParser
 import com.github.rvanheest.spickle.parser.xml.XmlParser.{ XmlParser, _ }
-
-import scala.util.{ Failure, Success }
 
 object PersonParser {
   case class Person(firstName: String, lastName: String, age: Int)
