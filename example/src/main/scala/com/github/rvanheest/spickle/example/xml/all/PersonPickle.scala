@@ -27,8 +27,8 @@ object PersonPickle {
 
   def picklePersons: XmlPickle[(Seq[Person], Seq[Int])] = branchNode("persons") {
     for {
-      persons <- picklePerson.many.seq[(Seq[Person], Seq[Int])](_._1)
-      numbers <- pickleSomeNumbers.seq[(Seq[Person], Seq[Int])](_._2)
+      persons <- picklePerson.many.seq[(Seq[Person], Seq[Int])] { case (persons, _) => persons }
+      numbers <- pickleSomeNumbers.seq[(Seq[Person], Seq[Int])] { case (_, nums) => nums }
     } yield (persons, numbers)
   }
 }

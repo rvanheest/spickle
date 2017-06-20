@@ -55,9 +55,9 @@ object XmlParser {
     // notice that _.attributes(...) can be null!!!
     attributeItem
       .map(_.attributes(namespace.uri, namespace, attr))
-      .satisfy(null !=, _ => s"attribute '$attr' with namespace '$namespace' is not found")
+      .satisfy(Option(_).isDefined, _ => s"attribute '$attr' with namespace '$namespace' is not found")
       .satisfy(_.nonEmpty, _ => s"attribute '$attr' with namespace '$namespace' is empty")
-      .map(_.head.text)
+      .map { case Seq(head, _@_*) => head.text }
   }
 
   private def allWorker[T, TS](p: XmlParser[T])(f: Option[T] => TS): XmlParser[TS] = {
