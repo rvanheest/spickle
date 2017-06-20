@@ -52,7 +52,8 @@ lazy val spickleLib = Project(
     name := "spickle",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %% "scala-xml" % "1.0.6" % "provided",
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+      "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0"
     )
   )
 )

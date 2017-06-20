@@ -1,6 +1,5 @@
 package com.github.rvanheest.spickle.pickle.xml
 
-import com.github.rvanheest.spickle.parser.ParserFailedException
 import com.github.rvanheest.spickle.parser.xml.XmlParser
 import com.github.rvanheest.spickle.pickle.{ Pickle, PickleFailedException }
 
@@ -78,8 +77,8 @@ object XmlPickle {
         case ((ts, rs), xml: Seq[Node]) =>
           type GroupedOption = (Option[T], Option[R])
           (for {
-            res1 <- p1.maybe.seq[GroupedOption](_._1)
-            res2 <- p2.maybe.seq[GroupedOption](_._2)
+            res1 <- p1.maybe.seq[GroupedOption] { case (t, _) => t }
+            res2 <- p2.maybe.seq[GroupedOption] { case (_, r) => r }
           } yield (res1, res2))
             .pickle((f1.undo(ts), f2.undo(rs)), xml)
       },
@@ -97,9 +96,9 @@ object XmlPickle {
         case ((ts, rs, ss), xml: Seq[Node]) =>
           type GroupedOption = (Option[T], Option[R], Option[S])
           (for {
-            res1 <- p1.maybe.seq[GroupedOption](_._1)
-            res2 <- p2.maybe.seq[GroupedOption](_._2)
-            res3 <- p3.maybe.seq[GroupedOption](_._3)
+            res1 <- p1.maybe.seq[GroupedOption] { case (t, _, _) => t }
+            res2 <- p2.maybe.seq[GroupedOption] { case (_, r, _) => r }
+            res3 <- p3.maybe.seq[GroupedOption] { case (_, _, s) => s }
           } yield (res1, res2, res3))
             .pickle((f1.undo(ts), f2.undo(rs), f3.undo(ss)), xml)
       },
@@ -119,10 +118,10 @@ object XmlPickle {
         case ((ts, rs, ss, vs), xml: Seq[Node]) =>
           type GroupedOption = (Option[T], Option[R], Option[S], Option[V])
           (for {
-            res1 <- p1.maybe.seq[GroupedOption](_._1)
-            res2 <- p2.maybe.seq[GroupedOption](_._2)
-            res3 <- p3.maybe.seq[GroupedOption](_._3)
-            res4 <- p4.maybe.seq[GroupedOption](_._4)
+            res1 <- p1.maybe.seq[GroupedOption] { case (t, _, _, _) => t }
+            res2 <- p2.maybe.seq[GroupedOption] { case (_, r, _, _) => r }
+            res3 <- p3.maybe.seq[GroupedOption] { case (_, _, s, _) => s }
+            res4 <- p4.maybe.seq[GroupedOption] { case (_, _, _, v) => v }
           } yield (res1, res2, res3, res4))
             .pickle((f1.undo(ts), f2.undo(rs), f3.undo(ss), f4.undo(vs)), xml)
       },
@@ -144,11 +143,11 @@ object XmlPickle {
         case ((ts, rs, ss, vs, ws), xml: Seq[Node]) =>
           type GroupedOption = (Option[T], Option[R], Option[S], Option[V], Option[W])
           (for {
-            res1 <- p1.maybe.seq[GroupedOption](_._1)
-            res2 <- p2.maybe.seq[GroupedOption](_._2)
-            res3 <- p3.maybe.seq[GroupedOption](_._3)
-            res4 <- p4.maybe.seq[GroupedOption](_._4)
-            res5 <- p5.maybe.seq[GroupedOption](_._5)
+            res1 <- p1.maybe.seq[GroupedOption] { case (t, _, _, _, _) => t }
+            res2 <- p2.maybe.seq[GroupedOption] { case (_, r, _, _, _) => r }
+            res3 <- p3.maybe.seq[GroupedOption] { case (_, _, s, _, _) => s }
+            res4 <- p4.maybe.seq[GroupedOption] { case (_, _, _, v, _) => v }
+            res5 <- p5.maybe.seq[GroupedOption] { case (_, _, _, _, w) => w }
           } yield (res1, res2, res3, res4, res5))
             .pickle((f1.undo(ts), f2.undo(rs), f3.undo(ss), f4.undo(vs), f5.undo(ws)), xml)
       },

@@ -6,9 +6,15 @@ class Parser[S, A](private[parser] val parser: S => (Try[A], S)) {
 
   def parse(state: S): (Try[A], S) = parser(state)
 
-  def eval(s: S): Try[A] = parse(s)._1
+  def eval(s: S): Try[A] = {
+    val (result, _) = parse(s)
+    result
+  }
 
-  def execute(s: S): S = parse(s)._2
+  def execute(s: S): S = {
+    val (_, remainder) = parse(s)
+    remainder
+  }
 
   def orElse[B >: A](other: => Parser[S, B]): Parser[S, B] = {
     Parser(st => parse(st) match {

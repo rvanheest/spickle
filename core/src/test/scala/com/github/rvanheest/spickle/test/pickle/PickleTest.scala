@@ -1,10 +1,13 @@
 package com.github.rvanheest.spickle.test.pickle
 
+import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
+
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 import com.github.rvanheest.spickle.pickle.string.StringPickle
 import com.github.rvanheest.spickle.pickle.{ Pickle, PickleFailedException }
 import org.scalatest.{ FlatSpec, Matchers }
 
+import scala.reflect.classTag
 import scala.util.{ Failure, Success, Try }
 
 class PickleTest extends FlatSpec with Matchers {
@@ -51,12 +54,13 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   it should "not use the unpack function while parsing" in {
-    var notVisited = true
-    point.seq[IntWrapper](w => { notVisited = false; w.i })
+    val notVisited = new AtomicBoolean(true)
+
+    point.seq[IntWrapper](w => { notVisited set false; w.i })
       .map(IntWrapper)
       .parse("1234")._1 shouldBe a[Success[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   it should "fail if the unpack function throws an exception" in {
@@ -67,14 +71,14 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   it should "not execute the original Pickler if the unpack function throws an exception" in {
-    var notVisited = true
+    val notVisited = new AtomicBoolean(true)
 
-    pointWithSideEffect(() => notVisited = false)
+    pointWithSideEffect(() => notVisited set false)
       .seq[IntWrapper](_ => throw new Exception("err"))
       .map(IntWrapper)
       .pickle(IntWrapper(1), "234") shouldBe a[Failure[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   it should "fail if the original Pickler fails" in {
@@ -86,101 +90,101 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   it should "not use the map function when pickling" in {
-    var notVisited = true
+    val notVisited = new AtomicBoolean(true)
 
     point.seq[IntWrapper](_.i)
-      .map(i => { notVisited = false; IntWrapper(i) })
+      .map(i => { notVisited set false; IntWrapper(i) })
       .pickle(IntWrapper(1), "234") shouldBe a[Success[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
-  case class IntTupleWrapper(i1: Int, i2: Int)
+  case class IntTupleWrapper(left: Int, right: Int)
 
   "seq flatMap" should "unpack the integers and concat them to the rest of the input" in {
-    point.seq[IntTupleWrapper](_.i1)
-      .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
+    point.seq[IntTupleWrapper](_.left)
+      .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
       .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Success("1234") => }
   }
 
   it should "pack the first two characters up into the IntTupleWrapper" in {
-    point.seq[IntTupleWrapper](_.i1)
-      .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
+    point.seq[IntTupleWrapper](_.left)
+      .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
       .parse("1234") should matchPattern { case (Success(IntTupleWrapper(1, 2)), "34") => }
   }
 
   it should "not use the unpack functions while parsing" in {
-    var notVisited1 = true
-    var notVisited2 = true
+    val notVisited1 = new AtomicBoolean(true)
+    val notVisited2 = new AtomicBoolean(true)
 
-    point.seq[IntTupleWrapper](w => { notVisited1 = false; w.i1 })
+    point.seq[IntTupleWrapper](w => { notVisited1 set false; w.left })
       .flatMap(i1 => point
-        .seq[IntTupleWrapper](w => { notVisited2 = false; w.i2 })
+        .seq[IntTupleWrapper](w => { notVisited2 set false; w.right })
         .map(IntTupleWrapper(i1, _)))
       .parse("1234")._1 shouldBe a[Success[_]]
 
-    notVisited1 shouldBe true
-    notVisited2 shouldBe true
+    notVisited1.get shouldBe true
+    notVisited2.get shouldBe true
   }
 
   it should "fail if the unpack function throws an exception" in {
     val err = new Exception("err")
-    point.seq[IntTupleWrapper](w => { throw err; w.i1 })
-      .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
+    point.seq[IntTupleWrapper](w => { throw err; w.left })
+      .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
       .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the flatMap function if the unpack function throws an exception" in {
     val err = new Exception("err")
-    var notVisited = true
-    point.seq[IntTupleWrapper](w => { throw err; w.i1 })
+    val notVisited = new AtomicBoolean(true)
+    point.seq[IntTupleWrapper](w => { throw err; w.left })
       .flatMap(i1 => {
-        notVisited = false
-        point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _))
+        notVisited set false
+        point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _))
       })
       .pickle(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   it should "not execute the original Pickler if the unpack function throws an exception" in {
     val err = new Exception("err")
-    var notVisited = true
-    pointWithSideEffect(() => notVisited = false)
-      .seq[IntTupleWrapper](w => { throw err; w.i1 })
-      .flatMap(i1 => point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _)))
+    val notVisited = new AtomicBoolean(true)
+    pointWithSideEffect(() => notVisited set false)
+      .seq[IntTupleWrapper](w => { throw err; w.left })
+      .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
       .pickle(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   it should "fail if the flatMap function throws an exception" in {
     val err = new Exception("err")
-    point.seq[IntTupleWrapper](_.i1)
+    point.seq[IntTupleWrapper](_.left)
       .flatMap(i1 => {
         throw err
-        point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _))
+        point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _))
       })
       .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the original Pickler if the flatMap function throws an exception" in {
     val err = new Exception("err")
-    var notVisited = true
-    pointWithSideEffect(() => notVisited = false).seq[IntTupleWrapper](_.i1)
+    val notVisited = new AtomicBoolean(true)
+    pointWithSideEffect(() => notVisited set false).seq[IntTupleWrapper](_.left)
       .flatMap(i1 => {
         throw err
-        point.seq[IntTupleWrapper](_.i2).map(IntTupleWrapper(i1, _))
+        point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _))
       })
       .pickle(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   it should "fail if the original Pickler fails" in {
     val err = new Exception("err")
-    pointWithSideEffect(() => throw err).seq[IntTupleWrapper](_.i1)
-      .flatMap(i1 => point.seq[IntTupleWrapper](_.i2)
+    pointWithSideEffect(() => throw err).seq[IntTupleWrapper](_.left)
+      .flatMap(i1 => point.seq[IntTupleWrapper](_.right)
         .map(IntTupleWrapper(i1, _)))
       .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
@@ -196,7 +200,6 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   it should "fail in casting if the pickler has an input of a different type" in {
-    import scala.reflect.classTag
     val pickleB: Pickle[String, B] = Pickle.from(new B())
     val pickleA: Pickle[String, A] = pickleB.upcast[A]
     val expectedMsg = s"can't cast ${ classOf[C] } to ${ classTag[B] }"
@@ -210,11 +213,11 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   it should "not use the second pickler if the first one succeeds" in {
-    var notVisited = true
-    lazy val p2 = pointWithSideEffect(() => notVisited = false)
+    val notVisited = new AtomicBoolean(true)
+    lazy val p2 = pointWithSideEffect(() => notVisited set false)
     point.orElse(p2).pickle(1, "23") shouldBe a[Success[_]]
 
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   it should "use the second pickler if the first one fails" in {
@@ -297,21 +300,21 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   "maybe" should "run the original Pickler when the input is a Some" in {
-    var visited = false
+    val visited = new AtomicBoolean(false)
 
-    pointWithSideEffect(() => visited = true)
+    pointWithSideEffect(() => visited set true)
       .maybe
       .pickle(Some(2), "345") should matchPattern { case Success("2345") => }
-    visited shouldBe true
+    visited.get shouldBe true
   }
 
   it should "not run the original Pickler when the input is a None" in {
-    var notVisited = true
+    val notVisited = new AtomicBoolean(true)
 
-    pointWithSideEffect(() => notVisited = false)
+    pointWithSideEffect(() => notVisited set false)
       .maybe
       .pickle(None, "345") should matchPattern { case Success("345") => }
-    notVisited shouldBe true
+    notVisited.get shouldBe true
   }
 
   "many" should "apply the original Pickler as many times as the input list is long" in {
@@ -324,11 +327,11 @@ class PickleTest extends FlatSpec with Matchers {
 
   it should "stop the pickler as soon as it fails" in {
     val err = new Exception("err")
-    var count = 0
-    pointWithSideEffect(() => { count += 1; if (count == 3) throw err })
+    val count = new AtomicInteger()
+    pointWithSideEffect(() => { if (count.incrementAndGet() == 3) throw err })
       .many
       .pickle(List(1, 2, 3, 4, 5), "67") should matchPattern { case Failure(`err`) => }
-    count shouldBe 3
+    count.get shouldBe 3
   }
 
   "atLeastOnce" should "apply the original Pickler as many times as the input list is long" in {
