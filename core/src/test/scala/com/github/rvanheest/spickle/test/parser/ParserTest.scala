@@ -1,7 +1,5 @@
 package com.github.rvanheest.spickle.test.parser
 
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicReference }
-
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -32,11 +30,8 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   "orElse" should "only run the first parser if it returns a success" in {
-    val notVisited = new AtomicBoolean(true)
-
-    point.orElse(Parser[String, Int](s => { notVisited set false; (Failure(new Exception), s) }))
+    point.orElse(Parser[String, Int](s => { fail("this position should not be visited"); (Failure(new Exception), s) }))
       .parse("123") should matchPattern { case (Success(1), "23") => }
-    notVisited.get shouldBe true
   }
 
   it should "run the second parser if the first parser returns a failure" in {
@@ -52,14 +47,9 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   it should "run the second parser with the same input as the first when the first parser fails" in {
-    val visited = new AtomicBoolean(false)
-    val input = new AtomicReference[String]()
-
     point.flatMap(_ => Parser.failure[String, Int](new Exception("ex")))
-      .orElse(Parser[String, Int](s => { visited set true; input set s; point.parse(s) }))
+      .orElse(point)
       .parse("123") should matchPattern { case (Success(1), "23") => }
-    visited.get shouldBe true
-    input.get shouldBe "123"
   }
 
   "map" should "apply the function in map when the parser returns a success" in {
@@ -67,11 +57,8 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   it should "not apply the function in map when the parser returns a failure" in {
-    val notVisited = new AtomicBoolean(true)
-
-    point.map(i => { notVisited set false; i * 2 })
+    point.map(i => { fail("this position should not be visited"); i * 2 })
       .parse("a123") should matchPattern { case (Failure(_: NumberFormatException), "123") => }
-    notVisited.get shouldBe true
   }
 
   it should "fail if the function in map throws an exception" in {
@@ -91,11 +78,8 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   it should "not apply the function in flatMap when the first parser returns a failure" in {
-    val notVisited = new AtomicBoolean(true)
-
-    point.flatMap(i => { notVisited set false; point.map(i +) })
+    point.flatMap(i => { fail("this position should not be visited"); point.map(i +) })
       .parse("a123") should matchPattern { case (Failure(_: NumberFormatException), "123") => }
-    notVisited.get shouldBe true
   }
 
   "transform" should "apply the function in transform when the parser returns a success" in {
@@ -124,11 +108,8 @@ class ParserTest extends FlatSpec with Matchers {
   }
 
   it should "not apply the predicate if the parser fails" in {
-    val notVisited = new AtomicBoolean(true)
-
-    point.satisfy(i => { notVisited set false; i % 2 == 0 })
+    point.satisfy(i => { fail("this position should not be visited"); i % 2 == 0 })
       .parse("") should matchPattern { case (Failure(`emptyError`), "") => }
-    notVisited.get shouldBe true
   }
 
   "noneOf" should "create a parser that succeeds when the value is not in the given list" in {
