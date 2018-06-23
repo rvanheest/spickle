@@ -176,20 +176,20 @@ class ParserTest extends FlatSpec with Matchers {
     point.takeWhile(_ % 2 == 0).parse("2468") should matchPattern { case (Success(List(2, 4, 6, 8)), "") => }
   }
 
-  it should "apply the parser untilit reaches an input it cannot parse" in {
+  it should "apply the parser until it reaches an input it cannot parse" in {
     point.takeWhile(_ % 2 == 0).parse("246a8") should matchPattern { case (Success(List(2, 4, 6)), "a8") => }
   }
 
   "takeUntil" should "apply the parser as many times as possible, as long as the predicate holds" in {
-    point.takeWhile(_ % 2 != 1).parse("2467") should matchPattern { case (Success(List(2, 4, 6)), "7") => }
+    point.takeUntil(_ % 2 != 0).parse("2467") should matchPattern { case (Success(List(2, 4, 6)), "7") => }
   }
 
   it should "apply the parser until it runs out of input, provided the predicate holds for all input" in {
-    point.takeWhile(_ % 2 != 1).parse("2468") should matchPattern { case (Success(List(2, 4, 6, 8)), "") => }
+    point.takeUntil(_ % 2 != 0).parse("2468") should matchPattern { case (Success(List(2, 4, 6, 8)), "") => }
   }
 
-  it should "apply the parser untilit reaches an input it cannot parse" in {
-    point.takeWhile(_ % 2 != 1).parse("246a8") should matchPattern { case (Success(List(2, 4, 6)), "a8") => }
+  it should "apply the parser until it reaches an input it cannot parse" in {
+    point.takeUntil(_ % 2 != 0).parse("246a8") should matchPattern { case (Success(List(2, 4, 6)), "a8") => }
   }
 
   "separatedBy" should "apply both the parser and the separater parser multiple times after each other with the separator as the last one before we run out of input" in {
