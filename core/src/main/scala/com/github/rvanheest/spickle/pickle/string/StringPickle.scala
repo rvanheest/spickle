@@ -3,6 +3,7 @@ package com.github.rvanheest.spickle.pickle.string
 import com.github.rvanheest.spickle.parser.string.StringParser
 import com.github.rvanheest.spickle.pickle.Pickle
 import com.github.rvanheest.spickle.pickle.Pickle.from
+import com.github.rvanheest.spickle.serializer.Serializer
 
 import scala.language.postfixOps
 import scala.util.Try
@@ -13,7 +14,7 @@ object StringPickle {
 
   def item: StringPickle[Char] = {
     Pickle(
-      pickler = (c, s) => Try(c +: s),
+      serializer = Serializer((c, s) => Try(c +: s)),
       parser = StringParser.item)
   }
 

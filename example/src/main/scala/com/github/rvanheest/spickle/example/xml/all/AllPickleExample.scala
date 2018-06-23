@@ -13,7 +13,7 @@ object AllPickleExample extends App {
   val parse @ (Success(persons), rest) = PersonPickle.picklePersons.parse(xml)
   println(parse)
 
-  val pickle @ Success(pickledXml) = PersonPickle.picklePersons.pickle(persons, rest)
+  val pickle @ Success(pickledXml) = PersonPickle.picklePersons.serialize(persons, rest)
   println(pickle)
 
   val parse2 = PersonPickle.picklePersons.parse(pickledXml)
