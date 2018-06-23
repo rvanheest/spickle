@@ -1,0 +1,111 @@
+package com.github.rvanheest.spickle.serializer
+
+import scala.util.{ Failure, Try }
+
+class Serializer[State, A](private[serializer] val serializer: (A, State) => Try[State]) {
+
+  def serialize(a: A, state: State): Try[State] = serializer(a, state)
+
+  def contramap[B](f: B => A): Serializer[State, B] = {
+    Serializer((b, state) => Try { f(b) } flatMap (a => this.serializer(a, state)))
+  }
+
+  def combine(that: Serializer[State, A]): Serializer[State, A] = {
+    Serializer((a, state) => {
+      for {
+        state2 <- that.serializer(a, state)
+        state3 <- this.serializer(a, state2)
+      } yield state3
+    })
+  }
+
+  def orElse(other: => Serializer[State, A]): Serializer[State, A] = {
+    Serializer((a, state) => this.serializer(a, state) orElse other.serializer(a, state))
+  }
+
+  def satisfy(predicate: A => Boolean): Serializer[State, A] = {
+    this.satisfy(predicate, a => s"input '$a' did not satisfy predicate")
+  }
+
+  def satisfy(predicate: A => Boolean, errMsg: A => String): Serializer[State, A] = {
+    Serializer((a, state) => if (predicate(a)) this.serializer(a, state)
+                             else Failure(SerializerFailedException(errMsg(a))))
+  }
+
+  def noneOf(as: Seq[A]): Serializer[State, A] = {
+    this.satisfy(!as.contains(_), a => s"input '$a' is contained in ${ as.mkString("[", ", ", "]") }")
+  }
+
+  def maybe: Serializer[State, Option[A]] = {
+    Serializer((optA, state) => optA.map(this.serializer(_, state)).getOrElse(Try(state)))
+  }
+
+  def many: Serializer[State, Seq[A]] = {
+    Serializer((as, state) => as.foldRight(Try(state))((a, triedState) => triedState.flatMap(this.serializer(a, _))))
+  }
+
+  def atLeastOnce: Serializer[State, Seq[A]] = {
+    val headSerializer = this.contramap[Seq[A]](_.head)
+    val tailSerializer = many.contramap[Seq[A]](_.tail)
+    headSerializer.combine(tailSerializer)
+  }
+
+  def takeUntil(predicate: A => Boolean): Serializer[State, Seq[A]] = takeWhile(!predicate(_))
+
+  def takeWhile(predicate: A => Boolean): Serializer[State, Seq[A]] = {
+    this.satisfy(predicate).many
+  }
+
+  def separatedBy[Sep](separator: Sep)(sep: Serializer[State, Sep]): Serializer[State, Seq[A]] = {
+    Serializer((as, state) => this.separatedBy1(separator)(sep).serializer(as, state) orElse Try(state))
+  }
+
+  def separatedBy1[Sep](separator: Sep)(sep: Serializer[State, Sep]): Serializer[State, Seq[A]] = {
+    val headSerializer = this.contramap[Seq[A]](_.head)
+    val tailSerializer = sep.contramap[A](_ => separator)
+      .combine(this)
+      .many
+      .contramap[Seq[A]](_.tail)
+
+    headSerializer.combine(tailSerializer)
+  }
+}
+
+object Serializer {
+  def apply[State, A](serializer: (A, State) => Try[State]): Serializer[State, A] = {
+    new Serializer(serializer)
+  }
+
+  def from[State, A](a: A): Serializer[State, A] = {
+    Serializer(
+      (_, state) => Try { state }
+    )
+  }
+
+  def empty[State, A]: Serializer[State, A] = {
+    Serializer(
+      (_, _) => Failure(new NoSuchElementException("empty serializer"))
+    )
+  }
+
+  def failure[State, A](e: Throwable): Serializer[State, A] = {
+    Serializer(
+      (_, _) => Failure(e)
+    )
+  }
+
+  def debugAndFail[State](pos: String): Serializer[State, Nothing] = {
+    Serializer[State, Nothing](
+      (_, state) => sys.error(s"you hit a debug statement at $pos: $state")
+    )
+  }
+
+  def debugAndContinue[State](pos: String)(implicit debugger: String => Unit = println): Serializer[State, Unit] = {
+    Serializer(
+      (a, state) => Try {
+        debugger(s"you hit a debug statement at $pos while serializing $a with state $state")
+        state
+      }
+    )
+  }
+}
