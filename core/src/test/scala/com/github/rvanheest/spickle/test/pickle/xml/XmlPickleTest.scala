@@ -15,26 +15,26 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   private val baz = <baz>hello world</baz>
 
   "emptyNode" should "create an empty xml element with the given label" in {
-    emptyNode("bar").pickle((), Seq(foo, baz)) should matchPattern {
+    emptyNode("bar").serialize((), Seq(foo, baz)) should matchPattern {
       case Success(Seq(`bar`, `foo`, `baz`)) =>
     }
   }
 
   "node" should "pickle the input node if its label is equal to the given String" in {
-    node("foo").pickle(foo, Seq(bar, baz)) should matchPattern {
+    node("foo").serialize(foo, Seq(bar, baz)) should matchPattern {
       case Success(Seq(`foo`, `bar`, `baz`)) =>
     }
   }
 
   it should "fail if the label of the input node does not match the given String" in {
     val expectedMsg = s"element '$foo' does not contain an element with name 'bar'"
-    inside(node("bar").pickle(foo, Seq(bar, baz))) {
+    inside(node("bar").serialize(foo, Seq(bar, baz))) {
       case Failure(e: NoSuchElementException) => e.getMessage shouldBe expectedMsg
     }
   }
 
   "stringNode" should "pickle the input text and wrap it in an xml element with the given label" in {
-    stringNode("foo").pickle(foo.text, Seq(bar, baz)) should matchPattern {
+    stringNode("foo").serialize(foo.text, Seq(bar, baz)) should matchPattern {
       case Success(Seq(`foo`, `bar`, `baz`)) =>
     }
   }
@@ -59,7 +59,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
 
     val foo = Foo(Seq(Bar("hello"), Bar("world")), Baz("!"))
 
-    inside(branchNode("foo")(subPickle).pickle(foo, NodeSeq.Empty)) {
+    inside(branchNode("foo")(subPickle).serialize(foo, NodeSeq.Empty)) {
       case Success(out) => out.toString() shouldBe Utility.trim(output).toString()
     }
   }
@@ -69,7 +69,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val input = <foo hello="abc">bar</foo>
     val output = <foo test="123" hello="abc">bar</foo>
     // @formatter:on
-    attribute("test").pickle("123", input) should matchPattern { case Success(Seq(`output`)) => }
+    attribute("test").serialize("123", input) should matchPattern { case Success(Seq(`output`)) => }
   }
 
   it should "override existing attributes" in {
@@ -77,19 +77,19 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val input = <foo test="hello" hello="abc">bar</foo>
     val output = <foo test="123" hello="abc">bar</foo>
     // @formatter:on
-    attribute("test").pickle("123", input) should matchPattern {
+    attribute("test").serialize("123", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
 
   it should "fail when the state is empty" in {
-    attribute("test").pickle("123", NodeSeq.Empty) should matchPattern {
+    attribute("test").serialize("123", NodeSeq.Empty) should matchPattern {
       case Failure(PickleFailedException("Cannot add an attribute with name 'test' to an empty node sequence")) =>
     }
   }
 
   it should "fail if the first node in the state is not an element" in {
-    attribute("test").pickle("123", Comment("hello")) should matchPattern {
+    attribute("test").serialize("123", Comment("hello")) should matchPattern {
       case Failure(PickleFailedException("Can only add an attribute with name 'test' to elements: <!--hello-->")) =>
     }
   }
@@ -100,7 +100,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val output = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").pickle("simple", input) should matchPattern {
+    namespaceAttribute("type").serialize("simple", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
@@ -111,21 +111,21 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val output = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").pickle("simple", input) should matchPattern {
+    namespaceAttribute("type").serialize("simple", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
 
   it should "fail when the state is empty" in {
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").pickle("simple", NodeSeq.Empty) should matchPattern {
+    namespaceAttribute("type").serialize("simple", NodeSeq.Empty) should matchPattern {
       case Failure(PickleFailedException("Cannot add an attribute with name 'xlink:type' to an empty node sequence")) =>
     }
   }
 
   it should "fail if the first node in the state is not an element" in {
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").pickle("simple", Comment("hello")) should matchPattern {
+    namespaceAttribute("type").serialize("simple", Comment("hello")) should matchPattern {
       case Failure(PickleFailedException("Can only add an attribute with name 'xlink:type' to elements: <!--hello-->")) =>
     }
   }
@@ -137,7 +137,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><abc>blabla</abc><def>albalb</def></foo>
-    fooPickle.pickle((Some("blabla"), Some("albalb")), NodeSeq.Empty) should matchPattern {
+    fooPickle.serialize((Some("blabla"), Some("albalb")), NodeSeq.Empty) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
@@ -149,7 +149,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><abc>blabla</abc><def>albalb</def></foo>
-    fooPickle.pickle((Some("blabla"), "albalb"), NodeSeq.Empty) should matchPattern {
+    fooPickle.serialize((Some("blabla"), "albalb"), NodeSeq.Empty) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
@@ -161,7 +161,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><def>albalb</def></foo>
-    fooPickle.pickle((None, "albalb"), NodeSeq.Empty) should matchPattern {
+    fooPickle.serialize((None, "albalb"), NodeSeq.Empty) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
@@ -173,7 +173,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><abc>blabla</abc><def>albalb</def></foo>
-    fooPickle.pickle(("blabla", "albalb"), NodeSeq.Empty) should matchPattern {
+    fooPickle.serialize(("blabla", "albalb"), NodeSeq.Empty) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
@@ -185,7 +185,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo></foo>
-    fooPickle.pickle((None, None), NodeSeq.Empty) should matchPattern {
+    fooPickle.serialize((None, None), NodeSeq.Empty) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }

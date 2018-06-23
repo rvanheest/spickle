@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 import com.github.rvanheest.spickle.pickle.string.StringPickle
 import com.github.rvanheest.spickle.pickle.{ Pickle, PickleFailedException }
+import com.github.rvanheest.spickle.serializer.{ Serializer, SerializerFailedException }
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.reflect.classTag
@@ -19,10 +20,10 @@ class PickleTest extends FlatSpec with Matchers {
   private def point: TestPickle = pointWithSideEffect(() => ())
 
   private def pointWithSideEffect[U](sideEffect: () => U): TestPickle = new TestPickle(
-    pickler = (n, s) => Try {
+    serializer = Serializer((n, s) => Try {
       sideEffect()
       n + s
-    },
+    }),
     parser = Parser(s => {
       sideEffect()
       s.toList match {
@@ -32,7 +33,7 @@ class PickleTest extends FlatSpec with Matchers {
     }))
 
   "pickle" should "run the pickler function in the Pickler" in {
-    point.pickle(1, "23") should matchPattern { case Success("123") => }
+    point.serialize(1, "23") should matchPattern { case Success("123") => }
   }
 
   "parse" should "run the parser function in the Pickler" in {
@@ -44,7 +45,7 @@ class PickleTest extends FlatSpec with Matchers {
   "seq map" should "unpack the integer and concat it to the rest of the input" in {
     point.seq[IntWrapper](_.integer)
       .map(IntWrapper)
-      .pickle(IntWrapper(1), "234") should matchPattern { case Success("1234") => }
+      .serialize(IntWrapper(1), "234") should matchPattern { case Success("1234") => }
   }
 
   it should "pack the first character up into the IntWrapper" in {
@@ -63,14 +64,14 @@ class PickleTest extends FlatSpec with Matchers {
     val err = new Exception("err")
     point.seq[IntWrapper](_ => throw err)
       .map(IntWrapper)
-      .pickle(IntWrapper(1), "234") should matchPattern { case Failure(`err`) => }
+      .serialize(IntWrapper(1), "234") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the original Pickler if the unpack function throws an exception" in {
     pointWithSideEffect(() => fail("this position should not be visited"))
       .seq[IntWrapper](_ => throw new Exception("err"))
       .map(IntWrapper)
-      .pickle(IntWrapper(1), "234") shouldBe a[Failure[_]]
+      .serialize(IntWrapper(1), "234") shouldBe a[Failure[_]]
   }
 
   it should "fail if the original Pickler fails" in {
@@ -78,13 +79,13 @@ class PickleTest extends FlatSpec with Matchers {
     pointWithSideEffect(() => throw err)
       .seq[IntWrapper](_.integer)
       .map(IntWrapper)
-      .pickle(IntWrapper(1), "234") should matchPattern { case Failure(`err`) => }
+      .serialize(IntWrapper(1), "234") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not use the map function when pickling" in {
     point.seq[IntWrapper](_.integer)
       .map(i => { fail("this position should not be visited"); IntWrapper(i) })
-      .pickle(IntWrapper(1), "234") shouldBe a[Success[_]]
+      .serialize(IntWrapper(1), "234") shouldBe a[Success[_]]
   }
 
   case class IntTupleWrapper(left: Int, right: Int)
@@ -92,7 +93,7 @@ class PickleTest extends FlatSpec with Matchers {
   "seq flatMap" should "unpack the integers and concat them to the rest of the input" in {
     point.seq[IntTupleWrapper](_.left)
       .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Success("1234") => }
+      .serialize(IntTupleWrapper(1, 2), "34") should matchPattern { case Success("1234") => }
   }
 
   it should "pack the first two characters up into the IntTupleWrapper" in {
@@ -113,7 +114,7 @@ class PickleTest extends FlatSpec with Matchers {
     val err = new Exception("err")
     point.seq[IntTupleWrapper](w => { throw err; w.left })
       .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
+      .serialize(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the flatMap function if the unpack function throws an exception" in {
@@ -123,7 +124,7 @@ class PickleTest extends FlatSpec with Matchers {
         fail("this position should not be visited")
         point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _))
       })
-      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
+      .serialize(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the original Pickler if the unpack function throws an exception" in {
@@ -131,7 +132,7 @@ class PickleTest extends FlatSpec with Matchers {
     pointWithSideEffect(() => fail("this position should not be visited"))
       .seq[IntTupleWrapper](w => { throw err; w.left })
       .flatMap(i1 => point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
+      .serialize(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
   }
 
   it should "fail if the flatMap function throws an exception" in {
@@ -141,7 +142,7 @@ class PickleTest extends FlatSpec with Matchers {
         throw err
         point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _))
       })
-      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
+      .serialize(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   it should "not execute the original Pickler if the flatMap function throws an exception" in {
@@ -152,7 +153,7 @@ class PickleTest extends FlatSpec with Matchers {
         throw err
         point.seq[IntTupleWrapper](_.right).map(IntTupleWrapper(i1, _))
       })
-      .pickle(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
+      .serialize(IntTupleWrapper(1, 2), "34") shouldBe a[Failure[_]]
   }
 
   it should "fail if the original Pickler fails" in {
@@ -160,7 +161,7 @@ class PickleTest extends FlatSpec with Matchers {
     pointWithSideEffect(() => throw err).seq[IntTupleWrapper](_.left)
       .flatMap(i1 => point.seq[IntTupleWrapper](_.right)
         .map(IntTupleWrapper(i1, _)))
-      .pickle(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
+      .serialize(IntTupleWrapper(1, 2), "34") should matchPattern { case Failure(`err`) => }
   }
 
   class A()
@@ -170,32 +171,32 @@ class PickleTest extends FlatSpec with Matchers {
   "upcast" should "cast a type to a given supertype" in {
     val pickleB: Pickle[String, B] = Pickle.from(new B())
     val pickleA: Pickle[String, A] = pickleB.upcast[A]
-    pickleA.pickle(new B(), "abc") shouldBe a[Success[_]]
+    pickleA.serialize(new B(), "abc") shouldBe a[Success[_]]
   }
 
   it should "fail in casting if the pickler has an input of a different type" in {
     val pickleB: Pickle[String, B] = Pickle.from(new B())
     val pickleA: Pickle[String, A] = pickleB.upcast[A]
     val expectedMsg = s"can't cast ${ classOf[C] } to ${ classTag[B] }"
-    pickleA.pickle(new C(), "abc") should matchPattern {
+    pickleA.serialize(new C(), "abc") should matchPattern {
       case Failure(PickleFailedException(`expectedMsg`)) =>
     }
   }
 
   "orElse" should "use the first pickler if this one succeeds" in {
-    point.orElse(Pickle.from(1)).pickle(1, "23") should matchPattern { case Success("123") => }
+    point.orElse(Pickle.from(1)).serialize(1, "23") should matchPattern { case Success("123") => }
   }
 
   it should "not use the second pickler if the first one succeeds" in {
     lazy val p2 = pointWithSideEffect(() => fail("this position should not be visited"))
-    point.orElse(p2).pickle(1, "23") shouldBe a[Success[_]]
+    point.orElse(p2).serialize(1, "23") shouldBe a[Success[_]]
   }
 
   it should "use the second pickler if the first one fails" in {
     val err = new Exception("err")
     pointWithSideEffect(() => throw err)
       .orElse(Pickle.from(99))
-      .pickle(1, "23") should matchPattern { case Success("23") => }
+      .serialize(1, "23") should matchPattern { case Success("23") => }
   }
 
   it should "not compile when the picklers do not have the exact same type (super-sub-types)" in {
@@ -247,26 +248,26 @@ class PickleTest extends FlatSpec with Matchers {
   }
 
   "satisfy" should "run the original pickler if the input satisfies the predicate" in {
-    point.satisfy(_ % 2 == 0).pickle(2, "34") should matchPattern { case Success("234") => }
+    point.satisfy(_ % 2 == 0).serialize(2, "34") should matchPattern { case Success("234") => }
   }
 
   it should "fail if the predicate does not satisfy" in {
     val expectedMsg = "input '1' did not satisfy predicate"
 
-    point.satisfy(_ % 2 == 0).pickle(1, "234") should matchPattern {
-      case Failure(PickleFailedException(`expectedMsg`)) =>
+    point.satisfy(_ % 2 == 0).serialize(1, "234") should matchPattern {
+      case Failure(SerializerFailedException(`expectedMsg`)) =>
     }
   }
 
   "noneOf" should "succeed if the input does not contain any elements in the given list" in {
-    point.noneOf(Seq(2, 3, 4)).pickle(1, "234") should matchPattern { case Success("1234") => }
+    point.noneOf(Seq(2, 3, 4)).serialize(1, "234") should matchPattern { case Success("1234") => }
   }
 
   it should "fail if the input is an element contained in the given list" in {
     val expectedMsg = "input '1' is contained in [1, 2, 3]"
 
-    point.noneOf(Seq(1, 2, 3)).pickle(1, "234") should matchPattern {
-      case Failure(PickleFailedException(`expectedMsg`)) =>
+    point.noneOf(Seq(1, 2, 3)).serialize(1, "234") should matchPattern {
+      case Failure(SerializerFailedException(`expectedMsg`)) =>
     }
   }
 
@@ -275,21 +276,21 @@ class PickleTest extends FlatSpec with Matchers {
 
     pointWithSideEffect(() => sideEffect(true))
       .maybe
-      .pickle(Some(2), "345") should matchPattern { case Success("2345") => }
+      .serialize(Some(2), "345") should matchPattern { case Success("2345") => }
   }
 
   it should "not run the original Pickler when the input is a None" in {
     pointWithSideEffect(() => fail("this position should not be visited"))
       .maybe
-      .pickle(None, "345") should matchPattern { case Success("345") => }
+      .serialize(None, "345") should matchPattern { case Success("345") => }
   }
 
   "many" should "apply the original Pickler as many times as the input list is long" in {
-    point.many.pickle(List(1, 2, 3), "45") should matchPattern { case Success("12345") => }
+    point.many.serialize(List(1, 2, 3), "45") should matchPattern { case Success("12345") => }
   }
 
   it should "not apply and return the initial state when the input list is empty" in {
-    point.many.pickle(Nil, "45") should matchPattern { case Success("45") => }
+    point.many.serialize(Nil, "45") should matchPattern { case Success("45") => }
   }
 
   it should "stop the pickler as soon as it fails" in {
@@ -297,53 +298,53 @@ class PickleTest extends FlatSpec with Matchers {
     val count = new AtomicInteger()
     pointWithSideEffect(() => { if (count.incrementAndGet() == 3) throw err })
       .many
-      .pickle(List(1, 2, 3, 4, 5), "67") should matchPattern { case Failure(`err`) => }
+      .serialize(List(1, 2, 3, 4, 5), "67") should matchPattern { case Failure(`err`) => }
     count.compareAndSet(3, 3) shouldBe true
   }
 
   "atLeastOnce" should "apply the original Pickler as many times as the input list is long" in {
-    point.atLeastOnce.pickle(List(1, 2, 3), "45") should matchPattern { case Success("12345") => }
+    point.atLeastOnce.serialize(List(1, 2, 3), "45") should matchPattern { case Success("12345") => }
   }
 
   it should "succeed if the input list has only one element" in {
-    point.atLeastOnce.pickle(List(1), "23") should matchPattern { case Success("123") => }
+    point.atLeastOnce.serialize(List(1), "23") should matchPattern { case Success("123") => }
   }
 
   it should "fail on an empty input" in {
-    point.atLeastOnce.pickle(Nil, "45") should matchPattern { case Failure(_: NoSuchElementException) => }
+    point.atLeastOnce.serialize(Nil, "45") should matchPattern { case Failure(_: NoSuchElementException) => }
   }
 
   "takeUntil" should "succeed if all elements in the input list do satisfy the negate of the given predicate" in {
-    point.takeUntil(_ % 2 == 0).pickle(List(1, 3, 5), "abc") should matchPattern { case Success("135abc") => }
+    point.takeUntil(_ % 2 == 0).serialize(List(1, 3, 5), "abc") should matchPattern { case Success("135abc") => }
   }
 
   it should "fail if any of the elements in the input list do satisfy the negate of the given predicate" in {
     val expectedMsg = "input '6' did not satisfy predicate"
-    point.takeUntil(_ % 2 == 0).pickle(List(1, 3, 5, 6), "abc") should matchPattern { case Failure(PickleFailedException(`expectedMsg`)) => }
+    point.takeUntil(_ % 2 == 0).serialize(List(1, 3, 5, 6), "abc") should matchPattern { case Failure(SerializerFailedException(`expectedMsg`)) => }
   }
 
   "takeWhile" should "succeed if all elements in the input list do satisfy the given predicate" in {
-    point.takeWhile(_ % 2 == 0).pickle(List(2, 4, 6), "abc") should matchPattern { case Success("246abc") => }
+    point.takeWhile(_ % 2 == 0).serialize(List(2, 4, 6), "abc") should matchPattern { case Success("246abc") => }
   }
 
   it should "fail if any of the elements in the input list do satisfy the given predicate" in {
     val expectedMsg = "input '7' did not satisfy predicate"
-    point.takeWhile(_ % 2 == 0).pickle(List(2, 4, 6, 7), "abc") should matchPattern { case Failure(PickleFailedException(`expectedMsg`)) => }
+    point.takeWhile(_ % 2 == 0).serialize(List(2, 4, 6, 7), "abc") should matchPattern { case Failure(SerializerFailedException(`expectedMsg`)) => }
   }
 
   "separatedBy" should "construct a string with the separator between the characters" in {
-    point.separatedBy('-')(StringPickle.char('-')).pickle(List(1, 2, 3), "abc") should matchPattern { case Success("1-2-3abc") => }
+    point.separatedBy('-')(StringPickle.char('-')).serialize(List(1, 2, 3), "abc") should matchPattern { case Success("1-2-3abc") => }
   }
 
   it should "return the initial state when the input list is empty" in {
-    point.separatedBy('-')(StringPickle.char('-')).pickle(Nil, "abc") should matchPattern { case Success("abc") => }
+    point.separatedBy('-')(StringPickle.char('-')).serialize(Nil, "abc") should matchPattern { case Success("abc") => }
   }
 
   "separatedBy1" should "construct a string with the separator between the characters" in {
-    point.separatedBy1('-')(StringPickle.char('-')).pickle(List(1, 2, 3), "abc") should matchPattern { case Success("1-2-3abc") => }
+    point.separatedBy1('-')(StringPickle.char('-')).serialize(List(1, 2, 3), "abc") should matchPattern { case Success("1-2-3abc") => }
   }
 
   it should "fail when the input list is empty" in {
-    point.separatedBy1('-')(StringPickle.char('-')).pickle(Nil, "abc") should matchPattern { case Failure(_: NoSuchElementException) => }
+    point.separatedBy1('-')(StringPickle.char('-')).serialize(Nil, "abc") should matchPattern { case Failure(_: NoSuchElementException) => }
   }
 }
