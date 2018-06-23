@@ -3,8 +3,8 @@ import sbt.Keys.{ crossScalaVersions, homepage, publishMavenStyle, scmInfo }
 lazy val spickleSettings = Seq(
   organization := "com.github.rvanheest",
   version := "1.x-SNAPSHOT",
-  scalaVersion := "2.12.0",
-  crossScalaVersions := Seq("2.11.11", "2.12.2"),
+  scalaVersion := "2.12.6",
+  crossScalaVersions := Seq("2.11.12", "2.12.6"),
   licenses += "Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"),
   homepage := Some(url("https://github.com/rvanheest/spickle")),
   scmInfo := Some(
@@ -64,7 +64,7 @@ lazy val spickleExample = Project(
   settings = spickleSettings ++ Seq(
     name := "spickle-example",
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+      "org.scala-lang.modules" %% "scala-xml" % "1.1.0"
     ),
     publishArtifact := false
   )
