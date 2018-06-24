@@ -1,8 +1,8 @@
 package com.github.rvanheest.spickle.test.pickle.xml
 
-import com.github.rvanheest.spickle.pickle.PickleFailedException
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle._
+import com.github.rvanheest.spickle.serializer.SerializerFailedException
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
 import scala.util.{ Failure, Success }
@@ -48,7 +48,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
         <baz>!</baz>
       </foo>
       // @formatter:on
-    case class Foo(bars: Seq[Bar], baz: Baz)
+      case class Foo(bars: Seq[Bar], baz: Baz)
     case class Bar(s: String)
     case class Baz(s: String)
 
@@ -84,13 +84,13 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
 
   it should "fail when the state is empty" in {
     attribute("test").serialize("123", NodeSeq.Empty) should matchPattern {
-      case Failure(PickleFailedException("Cannot add an attribute with name 'test' to an empty node sequence")) =>
+      case Failure(SerializerFailedException("Cannot add an attribute with name 'test' to an empty node sequence")) =>
     }
   }
 
   it should "fail if the first node in the state is not an element" in {
     attribute("test").serialize("123", Comment("hello")) should matchPattern {
-      case Failure(PickleFailedException("Can only add an attribute with name 'test' to elements: <!--hello-->")) =>
+      case Failure(SerializerFailedException("Can only add an attribute with name 'test' to elements: <!--hello-->")) =>
     }
   }
 
@@ -119,14 +119,14 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   it should "fail when the state is empty" in {
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").serialize("simple", NodeSeq.Empty) should matchPattern {
-      case Failure(PickleFailedException("Cannot add an attribute with name 'xlink:type' to an empty node sequence")) =>
+      case Failure(SerializerFailedException("Cannot add an attribute with name 'xlink:type' to an empty node sequence")) =>
     }
   }
 
   it should "fail if the first node in the state is not an element" in {
     implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").serialize("simple", Comment("hello")) should matchPattern {
-      case Failure(PickleFailedException("Can only add an attribute with name 'xlink:type' to elements: <!--hello-->")) =>
+      case Failure(SerializerFailedException("Can only add an attribute with name 'xlink:type' to elements: <!--hello-->")) =>
     }
   }
 

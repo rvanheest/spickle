@@ -18,6 +18,10 @@ object XmlParser {
       .getOrElse((Failure(ParserFailedException("can't parse an empty node sequence")), Seq.empty)))
   }
 
+  def emptyNode(name: String): XmlParser[Unit] = {
+    XmlParser.node(name).map(_ => ())
+  }
+
   def node(name: String): XmlParser[Node] = {
     nodeItem.transform {
       case (head, tail) if head.label == name => (Success(head), tail)
