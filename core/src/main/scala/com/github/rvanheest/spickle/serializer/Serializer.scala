@@ -1,5 +1,6 @@
 package com.github.rvanheest.spickle.serializer
 
+import scala.reflect.{ ClassTag, classTag }
 import scala.util.{ Failure, Try }
 
 class Serializer[State, A](private[serializer] val serializer: (A, State) => Try[State]) {
@@ -17,6 +18,13 @@ class Serializer[State, A](private[serializer] val serializer: (A, State) => Try
         state3 <- this.serializer(a, state2)
       } yield state3
     })
+  }
+
+  def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Serializer[State, B] = {
+    this.contramap {
+      case a: A => a
+      case x => throw SerializerFailedException(s"can't cast ${ x.getClass } to ${ classTag[A] }")
+    }
   }
 
   def orElse(other: => Serializer[State, A]): Serializer[State, A] = {
@@ -107,5 +115,20 @@ object Serializer {
         state
       }
     )
+  }
+
+  implicit class StringOperators[State](val serializer: Serializer[State, String]) extends AnyVal {
+
+    def fromByte: Serializer[State, Byte] = serializer.contramap(_.toString)
+
+    def fromShort: Serializer[State, Short] = serializer.contramap(_.toString)
+
+    def fromInt: Serializer[State, Int] = serializer.contramap(_.toString)
+
+    def fromLong: Serializer[State, Long] = serializer.contramap(_.toString)
+
+    def fromFloat: Serializer[State, Float] = serializer.contramap(_.toString)
+
+    def fromDouble: Serializer[State, Double] = serializer.contramap(_.toString)
   }
 }
