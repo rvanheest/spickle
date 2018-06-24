@@ -13,6 +13,7 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
   for (xml <- person1Xml) {
     println(new PrettyPrinter(160, 4).format(xml))
   }
+  println(object1 == person1)
   println(xml1.toString() == person1Xml.toString())
   println
 
@@ -24,6 +25,7 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
   for (xml <- person2Xml) {
     println(new PrettyPrinter(160, 4).format(xml))
   }
+  println(object2 == person2)
   println(xml2.toString() == person2Xml.toString())
   println
 
@@ -35,5 +37,6 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
   for (xml <- person3Xml) {
     println(new PrettyPrinter(160, 4).format(xml))
   }
+  println(object3 == person3)
   println(xml3.toString() == person3Xml.toString())
 }

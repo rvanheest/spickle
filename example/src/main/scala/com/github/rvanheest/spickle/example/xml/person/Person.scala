@@ -10,5 +10,5 @@ trait Person {
   case class FreepostAddress(number: String, zipCode: String, city: String)
     extends Address(zipCode: String, city: String)
 
-  case class Person(name: String, age: Int, address: Address, mail: Option[String])
+  case class Person(name: String, age: Int, address: Address, mail: Option[String] = None)
 }
