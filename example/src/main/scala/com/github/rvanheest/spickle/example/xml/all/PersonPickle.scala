@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.example.xml.all
 
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
+import com.github.rvanheest.spickle.pickle.Pickle._
 
 object PersonPickle {
   case class Person(firstName: String, lastName: String, age: Int)
@@ -9,7 +10,7 @@ object PersonPickle {
 
   def pickleLastname: XmlPickle[String] = stringNode("lastname").seq[String](_.toLowerCase.capitalize).map(_.toUpperCase)
 
-  def pickleAge: XmlPickle[Int] = stringNode("age").seq[Int](_.toString).map(_.toInt)
+  def pickleAge: XmlPickle[Int] = stringNode("age").toInt
 
   def picklePersonContent: XmlPickle[(String, String, Int)] = {
     all(pickleFirstname, pickleLastname, pickleAge)(mandatory, mandatory, mandatory)
