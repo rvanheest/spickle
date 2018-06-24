@@ -18,10 +18,10 @@ class Pickle[State, A](private[pickle] val serializer: Serializer[State, A],
   def seqId: SeqBuilder[State, A, A] = new SeqBuilder(this, identity)
 
   def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Pickle[State, B] = {
-    this.seq[B] {
-      case a: A => a
-      case x => throw PickleFailedException(s"can't cast ${ x.getClass } to ${ classTag[A] }")
-    }.map(identity)
+    Pickle(
+      serializer = serializer.upcast[B],
+      parser = parser.map(identity)
+    )
   }
 
   def orElse(other: => Pickle[State, A]): Pickle[State, A] = {
