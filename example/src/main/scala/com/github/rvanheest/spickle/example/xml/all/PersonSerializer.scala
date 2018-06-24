@@ -1,7 +1,6 @@
 package com.github.rvanheest.spickle.example.xml.all
 
-import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.XmlSerializer
-import com.github.rvanheest.spickle.serializer.xml.XmlSerializer._
+import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
 
 object PersonSerializer {
   case class Person(firstName: String, lastName: String, age: Int)
