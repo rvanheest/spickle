@@ -179,7 +179,7 @@ class PickleTest extends FlatSpec with Matchers {
     val pickleA: Pickle[String, A] = pickleB.upcast[A]
     val expectedMsg = s"can't cast ${ classOf[C] } to ${ classTag[B] }"
     pickleA.serialize(new C(), "abc") should matchPattern {
-      case Failure(PickleFailedException(`expectedMsg`)) =>
+      case Failure(SerializerFailedException(`expectedMsg`)) =>
     }
   }
 
