@@ -35,6 +35,7 @@ lazy val publishSettings = Seq(
   },
   publishMavenStyle := true,
   publishArtifact in Test := false,
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
   releaseVersionFile := file("version.sbt"),
   releaseTagName := s"v${
     if (releaseUseGlobalVersion.value) (version in ThisBuild).value
