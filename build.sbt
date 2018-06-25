@@ -35,7 +35,7 @@ lazy val publishSettings = Seq(
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  publishArtifact in Test := false
 )
 
 lazy val spickle = project.in(file("."))
@@ -53,7 +53,7 @@ lazy val spickleLib = Project(
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %% "scala-xml" % "1.0.6" % "provided",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-      "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0"
+      "org.scoverage" %% "scalac-scoverage-runtime" % "1.3.0" % "test"
     )
   )
 )
