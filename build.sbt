@@ -38,15 +38,15 @@ lazy val publishSettings = Seq(
   publishArtifact in Test := false
 )
 
-lazy val root = project.in(file("."))
+lazy val spickle = project.in(file("."))
   .settings(spickleSettings,
-    name := "root",
+    name := "spickle",
     publishArtifact := false
   )
   .aggregate(spickleLib)
 
 lazy val spickleLib = Project(
-  id = "spickle",
+  id = "spickle-core",
   base = file("core"),
   settings = spickleSettings ++ publishSettings ++ Seq(
     name := "spickle",
