@@ -2,7 +2,6 @@ import sbt.Keys.{ crossScalaVersions, homepage, publishMavenStyle, scmInfo }
 
 lazy val spickleSettings = Seq(
   organization := "com.github.rvanheest",
-  version := "1.x-SNAPSHOT",
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq("2.11.12", "2.12.6"),
   licenses += "Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"),
@@ -35,7 +34,15 @@ lazy val publishSettings = Seq(
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
-  publishArtifact in Test := false
+  publishArtifact in Test := false,
+  releaseVersionFile := file("version.sbt"),
+  releaseTagName := s"v${
+    if (releaseUseGlobalVersion.value) (version in ThisBuild).value
+    else version.value
+  }",
+  releaseCrossBuild := true,
+  releaseCommitMessage := s"Setting version to ${ (version in ThisBuild).value }",
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value
 )
 
 lazy val spickle = project.in(file("."))
