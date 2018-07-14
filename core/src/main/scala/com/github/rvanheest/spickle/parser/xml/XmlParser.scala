@@ -96,16 +96,18 @@ object XmlParser {
     })
   }
 
-  def all[T, TS](p1: XmlParser[T])(f1: Option[T] => TS): XmlParser[TS] = {
+  def all[T1, S1](p1: XmlParser[T1])(f1: Option[T1] => S1): XmlParser[S1] = {
     allPostProcess {
       allWorker(p1)(f1)
     }
   }
 
-  def all[T, TS, R, RS](p1: XmlParser[T],
-                        p2: XmlParser[R])(
-                         f1: Option[T] => TS,
-                         f2: Option[R] => RS): XmlParser[(TS, RS)] = {
+  def all[T1, S1, T2, S2](p1: XmlParser[T1],
+                          p2: XmlParser[T2],
+                         )
+                         (f1: Option[T1] => S1,
+                          f2: Option[T2] => S2,
+                         ): XmlParser[(S1, S2)] = {
     allPostProcess {
       for {
         res1 <- allWorker(p1)(f1)
@@ -114,12 +116,14 @@ object XmlParser {
     }
   }
 
-  def all[T, TS, R, RS, S, SS](p1: XmlParser[T],
-                               p2: XmlParser[R],
-                               p3: XmlParser[S])(
-                                f1: Option[T] => TS,
-                                f2: Option[R] => RS,
-                                f3: Option[S] => SS): XmlParser[(TS, RS, SS)] = {
+  def all[T1, S1, T2, S2, T3, S3](p1: XmlParser[T1],
+                                  p2: XmlParser[T2],
+                                  p3: XmlParser[T3],
+                                 )
+                                 (f1: Option[T1] => S1,
+                                  f2: Option[T2] => S2,
+                                  f3: Option[T3] => S3,
+                                 ): XmlParser[(S1, S2, S3)] = {
     allPostProcess {
       for {
         res1 <- allWorker(p1)(f1)
@@ -129,14 +133,16 @@ object XmlParser {
     }
   }
 
-  def all[T, TS, R, RS, S, SS, V, VS](p1: XmlParser[T],
-                                      p2: XmlParser[R],
-                                      p3: XmlParser[S],
-                                      p4: XmlParser[V])(
-                                       f1: Option[T] => TS,
-                                       f2: Option[R] => RS,
-                                       f3: Option[S] => SS,
-                                       f4: Option[V] => VS): XmlParser[(TS, RS, SS, VS)] = {
+  def all[T1, S1, T2, S2, T3, S3, T4, S4](p1: XmlParser[T1],
+                                          p2: XmlParser[T2],
+                                          p3: XmlParser[T3],
+                                          p4: XmlParser[T4],
+                                         )
+                                         (f1: Option[T1] => S1,
+                                          f2: Option[T2] => S2,
+                                          f3: Option[T3] => S3,
+                                          f4: Option[T4] => S4,
+                                         ): XmlParser[(S1, S2, S3, S4)] = {
     allPostProcess {
       for {
         res1 <- allWorker(p1)(f1)
@@ -147,16 +153,18 @@ object XmlParser {
     }
   }
 
-  def all[T, TS, R, RS, S, SS, V, VS, W, WS](p1: XmlParser[T],
-                                             p2: XmlParser[R],
-                                             p3: XmlParser[S],
-                                             p4: XmlParser[V],
-                                             p5: XmlParser[W])(
-                                              f1: Option[T] => TS,
-                                              f2: Option[R] => RS,
-                                              f3: Option[S] => SS,
-                                              f4: Option[V] => VS,
-                                              f5: Option[W] => WS): XmlParser[(TS, RS, SS, VS, WS)] = {
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5](p1: XmlParser[T1],
+                                                  p2: XmlParser[T2],
+                                                  p3: XmlParser[T3],
+                                                  p4: XmlParser[T4],
+                                                  p5: XmlParser[T5],
+                                                 )
+                                                 (f1: Option[T1] => S1,
+                                                  f2: Option[T2] => S2,
+                                                  f3: Option[T3] => S3,
+                                                  f4: Option[T4] => S4,
+                                                  f5: Option[T5] => S5,
+                                                 ): XmlParser[(S1, S2, S3, S4, S5)] = {
     allPostProcess {
       for {
         res1 <- allWorker(p1)(f1)
@@ -165,6 +173,260 @@ object XmlParser {
         res4 <- allWorker(p4)(f4)
         res5 <- allWorker(p5)(f5)
       } yield (res1, res2, res3, res4, res5)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6](p1: XmlParser[T1],
+          p2: XmlParser[T2],
+          p3: XmlParser[T3],
+          p4: XmlParser[T4],
+          p5: XmlParser[T5],
+          p6: XmlParser[T6],
+         )
+         (f1: Option[T1] => S1,
+          f2: Option[T2] => S2,
+          f3: Option[T3] => S3,
+          f4: Option[T4] => S4,
+          f5: Option[T5] => S5,
+          f6: Option[T6] => S6,
+         ): XmlParser[(S1, S2, S3, S4, S5, S6)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+      } yield (res1, res2, res3, res4, res5, res6)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6, T7, S7](p1: XmlParser[T1],
+                  p2: XmlParser[T2],
+                  p3: XmlParser[T3],
+                  p4: XmlParser[T4],
+                  p5: XmlParser[T5],
+                  p6: XmlParser[T6],
+                  p7: XmlParser[T7],
+                 )
+                 (f1: Option[T1] => S1,
+                  f2: Option[T2] => S2,
+                  f3: Option[T3] => S3,
+                  f4: Option[T4] => S4,
+                  f5: Option[T5] => S5,
+                  f6: Option[T6] => S6,
+                  f7: Option[T7] => S7,
+                 ): XmlParser[(S1, S2, S3, S4, S5, S6, S7)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+        res7 <- allWorker(p7)(f7)
+      } yield (res1, res2, res3, res4, res5, res6, res7)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6, T7, S7, T8, S8](p1: XmlParser[T1],
+                          p2: XmlParser[T2],
+                          p3: XmlParser[T3],
+                          p4: XmlParser[T4],
+                          p5: XmlParser[T5],
+                          p6: XmlParser[T6],
+                          p7: XmlParser[T7],
+                          p8: XmlParser[T8],
+                         )
+                         (f1: Option[T1] => S1,
+                          f2: Option[T2] => S2,
+                          f3: Option[T3] => S3,
+                          f4: Option[T4] => S4,
+                          f5: Option[T5] => S5,
+                          f6: Option[T6] => S6,
+                          f7: Option[T7] => S7,
+                          f8: Option[T8] => S8,
+                         ): XmlParser[(S1, S2, S3, S4, S5, S6, S7, S8)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+        res7 <- allWorker(p7)(f7)
+        res8 <- allWorker(p8)(f8)
+      } yield (res1, res2, res3, res4, res5, res6, res7, res8)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6, T7, S7, T8, S8, T9, S9](p1: XmlParser[T1],
+                                  p2: XmlParser[T2],
+                                  p3: XmlParser[T3],
+                                  p4: XmlParser[T4],
+                                  p5: XmlParser[T5],
+                                  p6: XmlParser[T6],
+                                  p7: XmlParser[T7],
+                                  p8: XmlParser[T8],
+                                  p9: XmlParser[T9],
+                                 )
+                                 (f1: Option[T1] => S1,
+                                  f2: Option[T2] => S2,
+                                  f3: Option[T3] => S3,
+                                  f4: Option[T4] => S4,
+                                  f5: Option[T5] => S5,
+                                  f6: Option[T6] => S6,
+                                  f7: Option[T7] => S7,
+                                  f8: Option[T8] => S8,
+                                  f9: Option[T9] => S9,
+                                 ): XmlParser[(S1, S2, S3, S4, S5, S6, S7, S8, S9)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+        res7 <- allWorker(p7)(f7)
+        res8 <- allWorker(p8)(f8)
+        res9 <- allWorker(p9)(f9)
+      } yield (res1, res2, res3, res4, res5, res6, res7, res8, res9)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6, T7, S7, T8, S8, T9, S9, T10, S10](p1: XmlParser[T1],
+                                            p2: XmlParser[T2],
+                                            p3: XmlParser[T3],
+                                            p4: XmlParser[T4],
+                                            p5: XmlParser[T5],
+                                            p6: XmlParser[T6],
+                                            p7: XmlParser[T7],
+                                            p8: XmlParser[T8],
+                                            p9: XmlParser[T9],
+                                            p10: XmlParser[T10],
+                                           )
+                                           (f1: Option[T1] => S1,
+                                            f2: Option[T2] => S2,
+                                            f3: Option[T3] => S3,
+                                            f4: Option[T4] => S4,
+                                            f5: Option[T5] => S5,
+                                            f6: Option[T6] => S6,
+                                            f7: Option[T7] => S7,
+                                            f8: Option[T8] => S8,
+                                            f9: Option[T9] => S9,
+                                            f10: Option[T10] => S10,
+                                           ): XmlParser[(S1, S2, S3, S4, S5, S6, S7, S8, S9, S10)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+        res7 <- allWorker(p7)(f7)
+        res8 <- allWorker(p8)(f8)
+        res9 <- allWorker(p9)(f9)
+        res10 <- allWorker(p10)(f10)
+      } yield (res1, res2, res3, res4, res5, res6, res7, res8, res9, res10)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6, T7, S7, T8, S8, T9, S9, T10, S10,
+  T11, S11](p1: XmlParser[T1],
+            p2: XmlParser[T2],
+            p3: XmlParser[T3],
+            p4: XmlParser[T4],
+            p5: XmlParser[T5],
+            p6: XmlParser[T6],
+            p7: XmlParser[T7],
+            p8: XmlParser[T8],
+            p9: XmlParser[T9],
+            p10: XmlParser[T10],
+            p11: XmlParser[T11],
+           )
+           (f1: Option[T1] => S1,
+            f2: Option[T2] => S2,
+            f3: Option[T3] => S3,
+            f4: Option[T4] => S4,
+            f5: Option[T5] => S5,
+            f6: Option[T6] => S6,
+            f7: Option[T7] => S7,
+            f8: Option[T8] => S8,
+            f9: Option[T9] => S9,
+            f10: Option[T10] => S10,
+            f11: Option[T11] => S11,
+           ): XmlParser[(S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+        res7 <- allWorker(p7)(f7)
+        res8 <- allWorker(p8)(f8)
+        res9 <- allWorker(p9)(f9)
+        res10 <- allWorker(p10)(f10)
+        res11 <- allWorker(p11)(f11)
+      } yield (res1, res2, res3, res4, res5, res6, res7, res8, res9, res10, res11)
+    }
+  }
+
+  def all[T1, S1, T2, S2, T3, S3, T4, S4, T5, S5,
+  T6, S6, T7, S7, T8, S8, T9, S9, T10, S10,
+  T11, S11, T12, S12](p1: XmlParser[T1],
+                      p2: XmlParser[T2],
+                      p3: XmlParser[T3],
+                      p4: XmlParser[T4],
+                      p5: XmlParser[T5],
+                      p6: XmlParser[T6],
+                      p7: XmlParser[T7],
+                      p8: XmlParser[T8],
+                      p9: XmlParser[T9],
+                      p10: XmlParser[T10],
+                      p11: XmlParser[T11],
+                      p12: XmlParser[T12],
+                     )
+                     (f1: Option[T1] => S1,
+                      f2: Option[T2] => S2,
+                      f3: Option[T3] => S3,
+                      f4: Option[T4] => S4,
+                      f5: Option[T5] => S5,
+                      f6: Option[T6] => S6,
+                      f7: Option[T7] => S7,
+                      f8: Option[T8] => S8,
+                      f9: Option[T9] => S9,
+                      f10: Option[T10] => S10,
+                      f11: Option[T11] => S11,
+                      f12: Option[T12] => S12,
+                     ): XmlParser[(S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12)] = {
+    allPostProcess {
+      for {
+        res1 <- allWorker(p1)(f1)
+        res2 <- allWorker(p2)(f2)
+        res3 <- allWorker(p3)(f3)
+        res4 <- allWorker(p4)(f4)
+        res5 <- allWorker(p5)(f5)
+        res6 <- allWorker(p6)(f6)
+        res7 <- allWorker(p7)(f7)
+        res8 <- allWorker(p8)(f8)
+        res9 <- allWorker(p9)(f9)
+        res10 <- allWorker(p10)(f10)
+        res11 <- allWorker(p11)(f11)
+        res12 <- allWorker(p12)(f12)
+      } yield (res1, res2, res3, res4, res5, res6, res7, res8, res9, res10, res11, res12)
     }
   }
 
