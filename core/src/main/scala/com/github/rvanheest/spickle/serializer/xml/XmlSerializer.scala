@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.serializer.xml
 
 import com.github.rvanheest.spickle.serializer.{ Serializer, SerializerFailedException }
+import shapeless.{ ::, HNil }
 
 import scala.util.{ Failure, Success, Try }
 import scala.xml._
@@ -50,6 +51,15 @@ object XmlSerializer {
     })
   }
 
+  def fromAllMandatory[T](serializer: XmlSerializer[T]): AllSerializerBuilder[T :: HNil] = {
+    AllSerializerBuilder.fromMandatory(serializer)
+  }
+
+  def fromAllOptional[T](serializer: XmlSerializer[T]): AllSerializerBuilder[Option[T] :: HNil] = {
+    AllSerializerBuilder.fromOptional(serializer)
+  }
+
+  // TODO remove all parsers
   def all[T1, S1](s1: XmlSerializer[T1])(f1: S1 => Option[T1]): XmlSerializer[S1] = {
     Serializer((ts, xml) => s1.maybe.serialize(f1(ts), xml))
   }
