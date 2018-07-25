@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 import scala.util.{ Failure, Success, Try }
 import scala.xml.Node
 
-case class AllParserBuilder[MyHList <: HList] private(private val aggregate: XmlParser[MyHList]) {
+class AllParserBuilder[MyHList <: HList] private(private val aggregate: XmlParser[MyHList]) {
 
   def andMandatory[T](parser: XmlParser[T]): AllParserBuilder[T :: MyHList] = {
     and(parser)(mandatory)
@@ -20,7 +20,7 @@ case class AllParserBuilder[MyHList <: HList] private(private val aggregate: Xml
   }
 
   private def and[T, S](parser: XmlParser[T])(f: Option[T] => S): AllParserBuilder[S :: MyHList] = {
-    AllParserBuilder(aggregate.flatMap(myHList => allWorker(parser)(f(_) :: myHList)))
+    new AllParserBuilder(aggregate.flatMap(myHList => allWorker(parser)(f(_) :: myHList)))
   }
 
   def build: XmlParser[MyHList] = {
@@ -37,11 +37,11 @@ case class AllParserBuilder[MyHList <: HList] private(private val aggregate: Xml
 object AllParserBuilder {
 
   def fromMandatory[T](parser: XmlParser[T]): AllParserBuilder[T :: HNil] = {
-    AllParserBuilder(allWorker(parser)(mandatory(_) :: HNil))
+    new AllParserBuilder(allWorker(parser)(mandatory(_) :: HNil))
   }
 
   def fromOptional[T](parser: XmlParser[T]): AllParserBuilder[Option[T] :: HNil] = {
-    AllParserBuilder(allWorker(parser)(optional(_) :: HNil))
+    new AllParserBuilder(allWorker(parser)(optional(_) :: HNil))
   }
 
   private def optional[X]: Option[X] => Option[X] = identity
