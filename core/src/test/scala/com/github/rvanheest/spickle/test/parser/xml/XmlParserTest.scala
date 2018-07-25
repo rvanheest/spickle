@@ -162,7 +162,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").parse(input) should matchPattern {
       case (Success("simple"), `input`) =>
     }
@@ -172,7 +172,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo ylink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     val expectedMsg = "attribute 'type' with namespace ' xmlns:xlink=\"http://www.w3.org/1999/xlink\"' is not found"
 
     namespaceAttribute("type").parse(input) should matchPattern {
@@ -184,7 +184,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     val expectedMsg = "attribute 'type' with namespace ' xmlns:xlink=\"http://www.w3.org/1999/xlink\"' is not found"
 
     namespaceAttribute("type").parse(input) should matchPattern {
