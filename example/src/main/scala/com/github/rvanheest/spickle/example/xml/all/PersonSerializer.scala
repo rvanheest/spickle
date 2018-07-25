@@ -2,7 +2,22 @@ package com.github.rvanheest.spickle.example.xml.all
 
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
 
-object PersonSerializer {
+import scala.util.Success
+import scala.xml.PrettyPrinter
+
+object PersonSerializer extends App {
+
+  val person1 = Person("Jan", "Hus", 25)
+  val person2 = Person("Martin", "Luther", 50)
+  val person3 = Person("John", "Calvin", 40)
+  val persons = List(person1, person2, person3)
+  val nums = List(1, 2, 3, 4, 5)
+
+  val Success(xmls) = PersonSerializer.serializePersons.serialize((persons, nums), Seq.empty)
+  for (xml <- xmls) {
+    println(new PrettyPrinter(160, 2).format(xml))
+  }
+
   case class Person(firstName: String, lastName: String, age: Int)
 
   def serializeFirstname: XmlSerializer[String] = stringNode("firstname")
@@ -26,7 +41,7 @@ object PersonSerializer {
   }
 
   def serializePersons: XmlSerializer[(Seq[Person], Seq[Int])] = branchNode("persons")(
-    serializePerson.many.contramap[(Seq[Person], Seq[Int])] { case (persons, _) => persons }
-      .combine(serializeSomeNumbers.contramap[(Seq[Person], Seq[Int])] { case (_, nums) => nums })
+    serializePerson.many.contramap[(Seq[Person], Seq[Int])] { case (ps, _) => ps }
+      .combine(serializeSomeNumbers.contramap[(Seq[Person], Seq[Int])] { case (_, ns) => ns })
   )
 }
