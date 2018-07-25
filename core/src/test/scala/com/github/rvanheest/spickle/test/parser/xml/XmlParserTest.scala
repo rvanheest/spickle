@@ -202,7 +202,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -220,7 +223,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -239,7 +245,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -261,7 +270,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -283,7 +295,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -305,7 +320,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -327,7 +345,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -347,7 +368,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
-    val combined = XmlParser.all(abcParser, defParser)(mandatory, mandatory)
+    val combined = XmlParser.fromAllMandatory(abcParser)
+      .andMandatory(defParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)
@@ -370,7 +394,11 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val abcParser = stringNode("abc")
     val defParser = stringNode("def")
     val ghiParser = stringNode("ghi")
-    val combined = XmlParser.all(abcParser, defParser, ghiParser)(optional, optional, optional)
+    val combined = XmlParser.fromAllOptional(abcParser)
+      .andOptional(defParser)
+      .andOptional(ghiParser)
+      .build
+      .map(_.reverse.tupled)
     val fooParser = branchNode("foo")(combined)
 
     val (result, remainder) = fooParser.parse(input)

@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.parser.xml
 
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
+import shapeless.{ ::, HNil }
 
 import scala.annotation.tailrec
 import scala.language.postfixOps
@@ -61,7 +62,15 @@ object XmlParser {
       .map(_.attributes(namespace.uri, namespace, attr))
       .satisfy(Option(_).isDefined, _ => s"attribute '$attr' with namespace '$namespace' is not found")
       .satisfy(_.nonEmpty, _ => s"attribute '$attr' with namespace '$namespace' is empty")
-      .map { case Seq(head, _@_*) => head.text }
+      .map { case Seq(head, _ @ _*) => head.text }
+  }
+
+  def fromAllMandatory[T](parser: XmlParser[T]): AllParserBuilder[T :: HNil] = {
+    AllParserBuilder.fromMandatory(parser)
+  }
+
+  def fromAllOptional[T](parser: XmlParser[T]): AllParserBuilder[Option[T] :: HNil] = {
+    AllParserBuilder.fromOptional(parser)
   }
 
   private def allWorker[T, TS](p: XmlParser[T])(f: Option[T] => TS): XmlParser[TS] = {
@@ -96,6 +105,7 @@ object XmlParser {
     })
   }
 
+  // TODO remove all parsers
   def all[T1, S1](p1: XmlParser[T1])(f1: Option[T1] => S1): XmlParser[S1] = {
     allPostProcess {
       allWorker(p1)(f1)
