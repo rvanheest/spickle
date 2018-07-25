@@ -1,8 +1,18 @@
 package com.github.rvanheest.spickle.example.xml.all
 
+import java.nio.file.Paths
+
 import com.github.rvanheest.spickle.parser.xml.XmlParser.{ XmlParser, _ }
 
-object PersonParser {
+import scala.xml.{ Utility, XML }
+
+object PersonParser extends App {
+
+  val path = Paths.get(getClass.getResource("/all/person1.xml").toURI)
+  val xml = Utility.trim(XML.loadFile(path.toFile))
+
+  println(parsePersons.parse(xml))
+
   case class Person(firstName: String, lastName: String, age: Int)
 
   def parseFirstName: XmlParser[String] = stringNode("firstname")
@@ -12,7 +22,11 @@ object PersonParser {
   def parseAge: XmlParser[Int] = stringNode("age").map(_.toInt)
 
   def parsePersonContent: XmlParser[(String, String, Int)] = {
-    all(parseFirstName, parseLastName, parseAge)(mandatory, mandatory, mandatory)
+    fromAllMandatory(parseAge)
+      .andMandatory(parseLastName)
+      .andMandatory(parseFirstName)
+      .build
+      .map(_.tupled)
   }
 
   def parsePerson: XmlParser[Person] = {

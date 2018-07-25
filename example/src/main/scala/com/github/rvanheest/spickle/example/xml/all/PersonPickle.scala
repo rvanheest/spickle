@@ -1,9 +1,27 @@
 package com.github.rvanheest.spickle.example.xml.all
 
-import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
-import com.github.rvanheest.spickle.pickle.Pickle._
+import java.nio.file.Paths
 
-object PersonPickle {
+import com.github.rvanheest.spickle.pickle.Pickle._
+import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
+
+import scala.util.Success
+import scala.xml.{ Utility, XML }
+
+object PersonPickle extends App {
+
+  val path = Paths.get(getClass.getResource("/all/person1.xml").toURI)
+  val xml = Utility.trim(XML.loadFile(path.toFile))
+
+  val parse @ (Success(persons), rest) = PersonPickle.picklePersons.parse(xml)
+  println(parse)
+
+  val pickle @ Success(pickledXml) = PersonPickle.picklePersons.serialize(persons, rest)
+  println(pickle)
+
+  val parse2 = PersonPickle.picklePersons.parse(pickledXml)
+  println(parse2)
+
   case class Person(firstName: String, lastName: String, age: Int)
 
   def pickleFirstname: XmlPickle[String] = stringNode("firstname")
@@ -28,7 +46,7 @@ object PersonPickle {
 
   def picklePersons: XmlPickle[(Seq[Person], Seq[Int])] = branchNode("persons") {
     for {
-      persons <- picklePerson.many.seq[(Seq[Person], Seq[Int])] { case (persons, _) => persons }
+      persons <- picklePerson.many.seq[(Seq[Person], Seq[Int])] { case (ps, _) => ps }
       numbers <- pickleSomeNumbers.seq[(Seq[Person], Seq[Int])] { case (_, nums) => nums }
     } yield (persons, numbers)
   }
