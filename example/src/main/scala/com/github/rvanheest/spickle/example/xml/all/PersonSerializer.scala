@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.example.xml.all
 
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
+import shapeless.HNil
 
 import scala.util.Success
 import scala.xml.PrettyPrinter
@@ -29,7 +30,11 @@ object PersonSerializer extends App {
   def serializeAge: XmlSerializer[Int] = stringNode("age").fromInt
 
   def serializePersonContent: XmlSerializer[(String, String, Int)] = {
-    all(serializeFirstname, serializeLastname, serializeAge)(mandatory, mandatory, mandatory)
+    fromAllMandatory(serializeFirstname)
+      .andMandatory(serializeLastname)
+      .andMandatory(serializeAge)
+      .build
+      .contramap[(String, String, Int)] { case (fn, ln, age) => age :: ln :: fn :: HNil }
   }
 
   def serializePerson: XmlSerializer[Person] = branchNode("person")(
