@@ -4,6 +4,7 @@ import java.nio.file.Paths
 
 import com.github.rvanheest.spickle.pickle.Pickle._
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
+import shapeless.HNil
 
 import scala.util.Success
 import scala.xml.{ Utility, XML }
@@ -31,7 +32,12 @@ object PersonPickle extends App {
   def pickleAge: XmlPickle[Int] = stringNode("age").toInt
 
   def picklePersonContent: XmlPickle[(String, String, Int)] = {
-    all(pickleFirstname, pickleLastname, pickleAge)(mandatory, mandatory, mandatory)
+    fromAllMandatory(pickleFirstname)
+      .andMandatory(pickleLastname)
+      .andMandatory(pickleAge)
+      .build
+      .seq[(String, String, Int)] { case (fn, ln, age) => age :: ln :: fn :: HNil }
+      .map(_.reverse.tupled)
   }
 
   def picklePerson: XmlPickle[Person] = {
