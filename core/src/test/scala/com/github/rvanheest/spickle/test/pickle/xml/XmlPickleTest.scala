@@ -4,6 +4,7 @@ import com.github.rvanheest.spickle.pickle.xml.XmlPickle
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle._
 import com.github.rvanheest.spickle.serializer.SerializerFailedException
 import org.scalatest.{ FlatSpec, Inside, Matchers }
+import shapeless.HNil
 
 import scala.util.{ Failure, Success }
 import scala.xml._
@@ -99,7 +100,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val input = <foo hello="abc">bar</foo>
     val output = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").serialize("simple", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
@@ -110,21 +111,21 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val input = <foo xlink:type="abc" hello="abc">bar</foo>
     val output = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").serialize("simple", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
 
   it should "fail when the state is empty" in {
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").serialize("simple", NodeSeq.Empty) should matchPattern {
       case Failure(SerializerFailedException("Cannot add an attribute with name 'xlink:type' to an empty node sequence")) =>
     }
   }
 
   it should "fail if the first node in the state is not an element" in {
-    implicit val ns = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     namespaceAttribute("type").serialize("simple", Comment("hello")) should matchPattern {
       case Failure(SerializerFailedException("Can only add an attribute with name 'xlink:type' to elements: <!--hello-->")) =>
     }
@@ -133,7 +134,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   "all2" should "turn an all of (present) optional objects to xml" in {
     val abcPickle = stringNode("abc")
     val defPickle = stringNode("def")
-    val combined = XmlPickle.all(abcPickle, defPickle)(optional, optional)
+    val combined = XmlPickle.fromAllOptional(abcPickle)
+      .andOptional(defPickle)
+      .build
+      .seq[(Option[String], Option[String])] { case (abcP, defP) => defP :: abcP :: HNil }
+      .map(_.reverse.tupled)
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><abc>blabla</abc><def>albalb</def></foo>
@@ -145,7 +150,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   it should "turn an all of (present) optional and mandatory objects to xml" in {
     val abcPickle = stringNode("abc")
     val defPickle = stringNode("def")
-    val combined = XmlPickle.all(abcPickle, defPickle)(optional, mandatory)
+    val combined = XmlPickle.fromAllOptional(abcPickle)
+      .andMandatory(defPickle)
+      .build
+      .seq[(Option[String], String)] { case (abcP, defP) => defP :: abcP :: HNil }
+      .map(_.reverse.tupled)
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><abc>blabla</abc><def>albalb</def></foo>
@@ -157,7 +166,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   it should "turn an all of (absent) optional and mandatory objects to xml" in {
     val abcPickle = stringNode("abc")
     val defPickle = stringNode("def")
-    val combined = XmlPickle.all(abcPickle, defPickle)(optional, mandatory)
+    val combined = XmlPickle.fromAllOptional(abcPickle)
+      .andMandatory(defPickle)
+      .build
+      .seq[(Option[String], String)] { case (abcP, defP) => defP :: abcP :: HNil }
+      .map(_.reverse.tupled)
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><def>albalb</def></foo>
@@ -169,7 +182,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   it should "turn an all of mandatory objects to xml" in {
     val abcPickle = stringNode("abc")
     val defPickle = stringNode("def")
-    val combined = XmlPickle.all(abcPickle, defPickle)(mandatory, mandatory)
+    val combined = XmlPickle.fromAllMandatory(abcPickle)
+      .andMandatory(defPickle)
+      .build
+      .seq[(String, String)] { case (abcP, defP) => defP :: abcP :: HNil }
+      .map(_.reverse.tupled)
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo><abc>blabla</abc><def>albalb</def></foo>
@@ -181,7 +198,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
   it should "turn an all of (absent) optional objects to xml" in {
     val abcPickle = stringNode("abc")
     val defPickle = stringNode("def")
-    val combined = XmlPickle.all(abcPickle, defPickle)(optional, optional)
+    val combined = XmlPickle.fromAllOptional(abcPickle)
+      .andOptional(defPickle)
+      .build
+      .seq[(Option[String], Option[String])] { case (abcP, defP) => defP :: abcP :: HNil }
+      .map(_.reverse.tupled)
     val fooPickle = branchNode("foo")(combined)
 
     val output = <foo></foo>

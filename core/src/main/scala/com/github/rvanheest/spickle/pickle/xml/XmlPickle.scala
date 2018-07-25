@@ -3,6 +3,7 @@ package com.github.rvanheest.spickle.pickle.xml
 import com.github.rvanheest.spickle.parser.xml.XmlParser
 import com.github.rvanheest.spickle.pickle.Pickle
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer
+import shapeless.{ ::, HNil }
 
 import scala.language.reflectiveCalls
 import scala.xml._
@@ -53,8 +54,17 @@ object XmlPickle {
     )
   }
 
+  def fromAllMandatory[T](parser: XmlPickle[T]): AllPickleBuilder[T :: HNil] = {
+    AllPickleBuilder.fromMandatory(parser)
+  }
+
+  def fromAllOptional[T](parser: XmlPickle[T]): AllPickleBuilder[Option[T] :: HNil] = {
+    AllPickleBuilder.fromOptional(parser)
+  }
+
   case class ISO[X, XS](run: X => XS, undo: XS => X)
 
+  // TODO remove all parsers
   def all[T1, S1](p1: XmlPickle[T1])(f1: ISO[Option[T1], S1]): XmlPickle[S1] = {
     Pickle(
       serializer = XmlSerializer.all(p1.serializer)(f1.undo),
