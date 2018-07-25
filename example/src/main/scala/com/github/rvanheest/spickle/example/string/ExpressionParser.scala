@@ -20,7 +20,7 @@ object ExpressionParser extends App {
     b <- factor
   } yield a * b) orElse factor
 
-  def factor: StringParser[Int] = number.map(_.toInt) <|> (for {
+  def factor: StringParser[Int] = number.toInt <|> (for {
     _ <- char('(')
     a <- expr
     _ <- char(')')

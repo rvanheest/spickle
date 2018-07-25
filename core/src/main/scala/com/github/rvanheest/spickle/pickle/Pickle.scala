@@ -13,6 +13,10 @@ class Pickle[State, A](private[pickle] val serializer: Serializer[State, A],
 
   def parse(state: State): (Try[A], State) = parser.parse(state)
 
+  def eval(input: State): Try[A] = parser.eval(input)
+
+  def execute(input: State): State = parser.execute(input)
+
   def seq[B](f: B => A): SeqBuilder[State, A, B] = new SeqBuilder(this, f)
 
   def seqId: SeqBuilder[State, A, A] = new SeqBuilder(this, identity)
