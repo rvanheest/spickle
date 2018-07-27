@@ -8,15 +8,15 @@ import shapeless.{ ::, HNil }
 import scala.language.postfixOps
 import scala.xml.{ Utility, XML }
 
-object AllNumbersParserExample extends App {
+object AllNumbersParserRunner extends App {
 
   val path = Paths.get(getClass.getResource("/all/numbers.xml").toURI)
   val xml = Utility.trim(XML.loadFile(path.toFile))
 
-  println(NumberParser.parseNumbers.parse(xml))
+  println(AllNumberParser.parseNumbers.parse(xml))
 }
 
-object NumberParser {
+object AllNumberParser {
 
   case class Numbers(a: Option[Int], b: Option[Int], c: Option[Int], d: Option[Int], e: Int,
                      f: Int, g: Int, h: Int, i: Int, j: Int,

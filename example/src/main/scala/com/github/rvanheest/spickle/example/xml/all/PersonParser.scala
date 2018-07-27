@@ -6,13 +6,15 @@ import com.github.rvanheest.spickle.parser.xml.XmlParser.{ XmlParser, _ }
 
 import scala.xml.{ Utility, XML }
 
-object PersonParser extends App {
+object PersonParserRunner extends App {
 
   val path = Paths.get(getClass.getResource("/all/person1.xml").toURI)
   val xml = Utility.trim(XML.loadFile(path.toFile))
 
-  println(parsePersons.parse(xml))
+  println(PersonParser.parsePersons.parse(xml))
+}
 
+object PersonParser {
   case class Person(firstName: String, lastName: String, age: Int)
 
   def parseFirstName: XmlParser[String] = stringNode("firstname")

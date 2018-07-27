@@ -1,12 +1,13 @@
 package com.github.rvanheest.spickle.example.xml.all
 
+import com.github.rvanheest.spickle.example.xml.all.PersonSerializer.Person
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
 import shapeless.HNil
 
 import scala.util.Success
 import scala.xml.PrettyPrinter
 
-object PersonSerializer extends App {
+object PersonSerializerRunner extends App {
 
   val person1 = Person("Jan", "Hus", 25)
   val person2 = Person("Martin", "Luther", 50)
@@ -18,7 +19,9 @@ object PersonSerializer extends App {
   for (xml <- xmls) {
     println(new PrettyPrinter(160, 2).format(xml))
   }
+}
 
+object PersonSerializer extends App {
   case class Person(firstName: String, lastName: String, age: Int)
 
   def serializeFirstname: XmlSerializer[String] = stringNode("firstname")
