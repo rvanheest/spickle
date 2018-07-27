@@ -9,22 +9,22 @@ import scala.language.postfixOps
 import scala.util.Success
 import scala.xml.{ Utility, XML }
 
-object AllNumbersPickleExample extends App {
+object AllNumbersPickleRunner extends App {
 
   val path = Paths.get(getClass.getResource("/all/numbers.xml").toURI)
   val xml = Utility.trim(XML.loadFile(path.toFile))
 
-  val parse @ (Success(numbers), rest) = NumberPickle.parseNumbers.parse(xml)
+  val parse @ (Success(numbers), rest) = AllNumberPickle.parseNumbers.parse(xml)
   println(parse)
 
-  val pickle @ Success(pickledXml) = NumberPickle.parseNumbers.serialize(numbers, rest)
+  val pickle @ Success(pickledXml) = AllNumberPickle.parseNumbers.serialize(numbers, rest)
   println(pickle)
 
-  val parse2 = NumberPickle.parseNumbers.parse(pickledXml)
+  val parse2 = AllNumberPickle.parseNumbers.parse(pickledXml)
   println(parse2)
 }
 
-object NumberPickle {
+object AllNumberPickle {
 
   case class Numbers(a: Option[Int], b: Option[Int], c: Option[Int], d: Option[Int], e: Int,
                      f: Int, g: Int, h: Int, i: Int, j: Int,

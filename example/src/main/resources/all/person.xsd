@@ -3,7 +3,7 @@
     <xs:complexType name="persontype">
         <xs:all>
             <xs:element name="firstname" type="xs:string"/>
-            <xs:element name="lastname" type="xs:string" minOccurs="1"/>
+            <xs:element name="lastname" type="xs:string"/>
             <xs:element name="age" type="xs:positiveInteger"/>
         </xs:all>
     </xs:complexType>

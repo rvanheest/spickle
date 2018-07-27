@@ -1,6 +1,6 @@
 package com.github.rvanheest.spickle.example.xml.all
 
-import com.github.rvanheest.spickle.example.xml.all.NumberSerializer.Numbers
+import com.github.rvanheest.spickle.example.xml.all.AllNumberSerializer.Numbers
 import com.github.rvanheest.spickle.serializer.xml.AllSerializerBuilder
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
 import shapeless.HNil
@@ -9,19 +9,19 @@ import scala.language.postfixOps
 import scala.util.Success
 import scala.xml.PrettyPrinter
 
-object AllNumbersSerializerExample extends App {
+object AllNumbersSerializerRunner extends App {
 
   val numbers = Numbers(None, Option(2), None, Option(4), 5, 6, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26)
 
-  val Success(xmls) = NumberSerializer.serializeNumbers.serialize(numbers, Seq.empty)
+  val Success(xmls) = AllNumberSerializer.serializeNumbers.serialize(numbers, Seq.empty)
   for (xml <- xmls) {
     println(new PrettyPrinter(160, 2).format(xml))
   }
 }
 
-object NumberSerializer {
+object AllNumberSerializer {
 
   case class Numbers(a: Option[Int], b: Option[Int], c: Option[Int], d: Option[Int], e: Int,
                      f: Int, g: Int, h: Int, i: Int, j: Int,
