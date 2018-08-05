@@ -149,4 +149,18 @@ object Pickle {
 
     def toDouble: Pickle[State, Double] = pickle.seq[Double](_.toString).map(_.toDouble)
   }
+
+  implicit class MaybeStringOperators[State](val pickle: Pickle[State, Option[String]]) extends AnyVal {
+    def toByte: Pickle[State, Option[Byte]] = pickle.seq[Option[Byte]](_.map(_.toString)).map(_.map(_.toByte))
+
+    def toShort: Pickle[State, Option[Short]] = pickle.seq[Option[Short]](_.map(_.toString)).map(_.map(_.toShort))
+
+    def toInt: Pickle[State, Option[Int]] = pickle.seq[Option[Int]](_.map(_.toString)).map(_.map(_.toInt))
+
+    def toLong: Pickle[State, Option[Long]] = pickle.seq[Option[Long]](_.map(_.toString)).map(_.map(_.toLong))
+
+    def toFloat: Pickle[State, Option[Float]] = pickle.seq[Option[Float]](_.map(_.toString)).map(_.map(_.toFloat))
+
+    def toDouble: Pickle[State, Option[Double]] = pickle.seq[Option[Double]](_.map(_.toString)).map(_.map(_.toDouble))
+  }
 }

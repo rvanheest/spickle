@@ -432,4 +432,56 @@ object Parser {
      */
     def toDouble: Parser[State, Double] = parser.map(_.toDouble)
   }
+
+  /**
+   * Enriches the API for parsers that parse a token to a `Option[String]`. This class contains some
+   * convenience methods that make programming a complex parser a little easier.
+   *
+   * @param parser the parser to be enriched
+   * @tparam State the type of tokens to be parsed by the given parser
+   */
+  implicit class MaybeStringOperators[State](val parser: Parser[State, Option[String]]) extends AnyVal {
+
+    /**
+     * Convert the result of this parse to a `Option[Byte]`
+     *
+     * @return a new parser that converts the result of a parse to a `Option[Byte]`
+     */
+    def toByte: Parser[State, Option[Byte]] = parser.map(_.map(_.toByte))
+
+    /**
+     * Convert the result of this parse to a `Option[Short]`
+     *
+     * @return a new parser that converts the result of a parse to a `Option[Short]`
+     */
+    def toShort: Parser[State, Option[Short]] = parser.map(_.map(_.toShort))
+
+    /**
+     * Convert the result of this parse to a `Option[Int]`
+     *
+     * @return a new parser that converts the result of a parse to a `Option[Int]`
+     */
+    def toInt: Parser[State, Option[Int]] = parser.map(_.map(_.toInt))
+
+    /**
+     * Convert the result of this parse to a `Option[Long]`
+     *
+     * @return a new parser that converts the result of a parse to a `Option[Long]`
+     */
+    def toLong: Parser[State, Option[Long]] = parser.map(_.map(_.toLong))
+
+    /**
+     * Convert the result of this parse to a `Option[Float]`
+     *
+     * @return a new parser that converts the result of a parse to a `Option[Float]`
+     */
+    def toFloat: Parser[State, Option[Float]] = parser.map(_.map(_.toFloat))
+
+    /**
+     * Convert the result of this parse to a `Double]`
+     *
+     * @return a new parser that converts the result of a parse to a `Double]`
+     */
+    def toDouble: Parser[State, Option[Double]] = parser.map(_.map(_.toDouble))
+  }
 }

@@ -142,4 +142,19 @@ object Serializer {
 
     def fromDouble: Serializer[State, Double] = serializer.contramap(_.toString)
   }
+
+  implicit class MaybeStringOperators[State](val serializer: Serializer[State, Option[String]]) extends AnyVal {
+
+    def fromByte: Serializer[State, Option[Byte]] = serializer.contramap(_.map(_.toString))
+
+    def fromShort: Serializer[State, Option[Short]] = serializer.contramap(_.map(_.toString))
+
+    def fromInt: Serializer[State, Option[Int]] = serializer.contramap(_.map(_.toString))
+
+    def fromLong: Serializer[State, Option[Long]] = serializer.contramap(_.map(_.toString))
+
+    def fromFloat: Serializer[State, Option[Float]] = serializer.contramap(_.map(_.toString))
+
+    def fromDouble: Serializer[State, Option[Double]] = serializer.contramap(_.map(_.toString))
+  }
 }
