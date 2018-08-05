@@ -234,7 +234,8 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     remainder shouldBe empty
   }
 
-  it should "fail when multiple elements of the same type are found" in {
+  it should "not fail when multiple elements of the same type are found" in {
+    // the remaining elements with the same name might be part of another structure in the XSD
     val input = Utility.trim(
       <foo>
         <abc>blabla</abc>
@@ -249,114 +250,10 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
       .andOptional(defParser)
       .build
       .map(_.reverse.tupled)
-    val fooParser = branchNode("foo")(combined)
 
-    val (result, remainder) = fooParser.parse(input)
-    inside(result) {
-      case Failure(ParserFailedException(msg)) =>
-        msg shouldBe "remaining elements found in any"
+    combined.parse(input.child) should matchPattern {
+      case (Success((Some("blabla"), Some("albalb"))), Seq(<abc>xyzuvw</abc>)) =>
     }
-    remainder should contain only <abc>xyzuvw</abc>
-  }
-
-  it should "fail if the first element is unknown" in {
-    val input = Utility.trim(
-      <foo>
-        <ghi>xyzxyz</ghi>
-        <abc>blabla</abc>
-        <def>albalb</def>
-      </foo>
-    )
-
-    val abcParser = stringNode("abc")
-    val defParser = stringNode("def")
-    val combined = XmlParser.fromAllOptional(abcParser)
-      .andOptional(defParser)
-      .build
-      .map(_.reverse.tupled)
-    val fooParser = branchNode("foo")(combined)
-
-    val (result, remainder) = fooParser.parse(input)
-    inside(result) {
-      case Failure(ParserFailedException(msg)) =>
-        msg shouldBe "remaining elements found in any"
-    }
-    remainder should contain only <ghi>xyzxyz</ghi>
-  }
-
-  it should "fail if the second element is unknown" in {
-    val input = Utility.trim(
-      <foo>
-        <abc>blabla</abc>
-        <ghi>xyzxyz</ghi>
-        <def>albalb</def>
-      </foo>
-    )
-
-    val abcParser = stringNode("abc")
-    val defParser = stringNode("def")
-    val combined = XmlParser.fromAllOptional(abcParser)
-      .andOptional(defParser)
-      .build
-      .map(_.reverse.tupled)
-    val fooParser = branchNode("foo")(combined)
-
-    val (result, remainder) = fooParser.parse(input)
-    inside(result) {
-      case Failure(ParserFailedException(msg)) =>
-        msg shouldBe "remaining elements found in any"
-    }
-    remainder should contain only <ghi>xyzxyz</ghi>
-  }
-
-  it should "fail if the second element is unknown when the stuff is in reversed order" in {
-    val input = Utility.trim(
-      <foo>
-        <def>albalb</def>
-        <ghi>xyzxyz</ghi>
-        <abc>blabla</abc>
-      </foo>
-    )
-
-    val abcParser = stringNode("abc")
-    val defParser = stringNode("def")
-    val combined = XmlParser.fromAllOptional(abcParser)
-      .andOptional(defParser)
-      .build
-      .map(_.reverse.tupled)
-    val fooParser = branchNode("foo")(combined)
-
-    val (result, remainder) = fooParser.parse(input)
-    inside(result) {
-      case Failure(ParserFailedException(msg)) =>
-        msg shouldBe "remaining elements found in any"
-    }
-    remainder should contain only <ghi>xyzxyz</ghi>
-  }
-
-  it should "fail if the last element is unknown" in {
-    val input = Utility.trim(
-      <foo>
-        <abc>blabla</abc>
-        <def>albalb</def>
-        <ghi>xyzxyz</ghi>
-      </foo>
-    )
-
-    val abcParser = stringNode("abc")
-    val defParser = stringNode("def")
-    val combined = XmlParser.fromAllOptional(abcParser)
-      .andOptional(defParser)
-      .build
-      .map(_.reverse.tupled)
-    val fooParser = branchNode("foo")(combined)
-
-    val (result, remainder) = fooParser.parse(input)
-    inside(result) {
-      case Failure(ParserFailedException(msg)) =>
-        msg shouldBe "remaining elements found in any"
-    }
-    remainder should contain only <ghi>xyzxyz</ghi>
   }
 
   it should "fail if a mandatory element is missing" in {

@@ -23,14 +23,7 @@ class AllParserBuilder[MyHList <: HList] private(private val aggregate: XmlParse
     new AllParserBuilder(aggregate.flatMap(myHList => allWorker(parser)(f(_) :: myHList)))
   }
 
-  def build: XmlParser[MyHList] = {
-    Parser(ns => {
-      aggregate.parse(ns) match {
-        case (result, Seq()) => (result, Seq())
-        // TODO is this Failure correct?
-        case (_, xs) => (Failure(ParserFailedException("remaining elements found in any")), xs)
-      }
-    })
+  def build: XmlParser[MyHList] = aggregate
   }
 }
 
@@ -57,9 +50,8 @@ object AllParserBuilder {
       nodesToInspect match {
         case Seq() => (Success(None), visitedNodesToSkip)
         case Seq(node, tail @ _*) =>
-          val (result, remainder) = p.maybe.parse(node)
-          result match {
-            case t @ (Success(Some(_)) | Failure(_)) => (t, visitedNodesToSkip ++ remainder ++ tail)
+          p.maybe.eval(node) match {
+            case t @ (Success(Some(_)) | Failure(_)) => (t, visitedNodesToSkip ++ tail)
             case Success(None) => recursive(tail, visitedNodesToSkip :+ node)
           }
       }
