@@ -34,12 +34,12 @@ object PersonPickle {
   def pickleAge: XmlPickle[Int] = stringNode("age").toInt
 
   def picklePersonContent: XmlPickle[(String, String, Int)] = {
-    fromAllMandatory(pickleFirstname)
+    fromAllMandatory(pickleAge)
       .andMandatory(pickleLastname)
-      .andMandatory(pickleAge)
+      .andMandatory(pickleFirstname)
       .build
-      .seq[(String, String, Int)] { case (fn, ln, age) => age :: ln :: fn :: HNil }
-      .map(_.reverse.tupled)
+      .seq[(String, String, Int)] { case (fn, ln, age) => fn :: ln :: age :: HNil }
+      .map(_.tupled)
   }
 
   def picklePerson: XmlPickle[Person] = {

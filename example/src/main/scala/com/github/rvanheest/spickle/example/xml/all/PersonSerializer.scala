@@ -33,11 +33,11 @@ object PersonSerializer extends App {
   def serializeAge: XmlSerializer[Int] = stringNode("age").fromInt
 
   def serializePersonContent: XmlSerializer[(String, String, Int)] = {
-    fromAllMandatory(serializeFirstname)
+    fromAllMandatory(serializeAge)
       .andMandatory(serializeLastname)
-      .andMandatory(serializeAge)
+      .andMandatory(serializeFirstname)
       .build
-      .contramap[(String, String, Int)] { case (fn, ln, age) => age :: ln :: fn :: HNil }
+      .contramap[(String, String, Int)] { case (fn, ln, age) => fn :: ln :: age :: HNil }
   }
 
   def serializePerson: XmlSerializer[Person] = branchNode("person")(

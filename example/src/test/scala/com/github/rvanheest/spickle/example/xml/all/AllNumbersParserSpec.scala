@@ -10,7 +10,7 @@ import scala.util.{ Failure, Success }
 import scala.xml.transform.{ RewriteRule, RuleTransformer }
 import scala.xml._
 
-class AllNumbersParser extends FlatSpec with Matchers with OptionValues with Inside {
+class AllNumbersParserSpec extends FlatSpec with Matchers with OptionValues with Inside {
 
   "parseNumbers" should "parse when the optional values are all present" in {
     val path = Paths.get(getClass.getResource("/all/numbers1.xml").toURI)
@@ -110,12 +110,11 @@ class AllNumbersParser extends FlatSpec with Matchers with OptionValues with Ins
 
     inside(parseAllNumbers.parse(xmlWithoutX.child)) {
       case (Failure(e: ParserFailedException), remainder) =>
-        val expectedRemainder = xml.child
-            .filterNot(_.label == "z")
-            .filterNot(_.label == "y")
-            .filterNot(_.label == "x")
-        remainder should contain theSameElementsAs expectedRemainder
-
+        remainder should contain only (
+          <y>25</y>,
+          <z>26</z>,
+          <other>27</other>
+        )
         e should have message "missing mandatory element in any"
     }
   }
