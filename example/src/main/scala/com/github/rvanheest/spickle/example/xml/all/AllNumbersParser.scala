@@ -10,10 +10,15 @@ import scala.xml.{ Utility, XML }
 
 object AllNumbersParserRunner extends App {
 
-  val path = Paths.get(getClass.getResource("/all/numbers.xml").toURI)
-  val xml = Utility.trim(XML.loadFile(path.toFile))
+  val path1 = Paths.get(getClass.getResource("/all/numbers1.xml").toURI)
+  val xml1 = Utility.trim(XML.loadFile(path1.toFile))
 
-  println(AllNumberParser.parseNumbers.parse(xml))
+  println(AllNumberParser.parseNumbers.parse(xml1))
+
+  val path2 = Paths.get(getClass.getResource("/all/numbers2.xml").toURI)
+  val xml2 = Utility.trim(XML.loadFile(path2.toFile))
+
+  println(AllNumberParser.parseNumbers.parse(xml2))
 }
 
 object AllNumberParser {
