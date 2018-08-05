@@ -1,9 +1,10 @@
 package com.github.rvanheest.spickle.parser.xml
 
+import com.github.rvanheest.spickle.MyGeneric
 import com.github.rvanheest.spickle.parser.xml.AllParserBuilder._
 import com.github.rvanheest.spickle.parser.xml.XmlParser.XmlParser
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
-import shapeless.{ ::, Generic, HList, HNil }
+import shapeless.{ ::, HList, HNil }
 
 import scala.annotation.tailrec
 import scala.util.{ Failure, Success, Try }
@@ -25,7 +26,7 @@ class AllParserBuilder[MyHList <: HList] private(private val aggregate: XmlParse
 
   def build: XmlParser[MyHList] = aggregate
 
-  def build[T](gen: Generic[T] {type Repr = MyHList}): XmlParser[T] = {
+  def build[T](gen: MyGeneric[T, MyHList]): XmlParser[T] = {
     aggregate map gen.from
   }
 

@@ -1,7 +1,8 @@
 package com.github.rvanheest.spickle.serializer.xml
 
+import com.github.rvanheest.spickle.MyGeneric
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.XmlSerializer
-import shapeless.{ ::, Generic, HList, HNil }
+import shapeless.{ ::, HList, HNil }
 
 class AllSerializerBuilder[MyHList <: HList] private(private val aggregate: XmlSerializer[MyHList]) {
 
@@ -21,7 +22,7 @@ class AllSerializerBuilder[MyHList <: HList] private(private val aggregate: XmlS
 
   def build: XmlSerializer[MyHList] = aggregate
 
-  def build[T](gen: Generic[T] {type Repr = MyHList}): XmlSerializer[T] = {
+  def build[T](gen: MyGeneric[T, MyHList]): XmlSerializer[T] = {
     aggregate contramap gen.to
   }
 

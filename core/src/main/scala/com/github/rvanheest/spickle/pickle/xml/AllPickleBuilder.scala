@@ -1,10 +1,11 @@
 package com.github.rvanheest.spickle.pickle.xml
 
+import com.github.rvanheest.spickle.MyGeneric
 import com.github.rvanheest.spickle.parser.xml.AllParserBuilder
 import com.github.rvanheest.spickle.pickle.Pickle
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle.XmlPickle
 import com.github.rvanheest.spickle.serializer.xml.AllSerializerBuilder
-import shapeless.{ ::, Generic, HList, HNil }
+import shapeless.{ ::, HList, HNil }
 
 class AllPickleBuilder[MyHList <: HList] private[xml](private[xml] val aggregateParser: AllParserBuilder[MyHList],
                                                       private[xml] val aggregateSerializer: AllSerializerBuilder[MyHList]) {
@@ -30,7 +31,7 @@ class AllPickleBuilder[MyHList <: HList] private[xml](private[xml] val aggregate
     )
   }
 
-  def build[T](gen: Generic[T] {type Repr = MyHList}): XmlPickle[T] = {
+  def build[T](gen: MyGeneric[T, MyHList]): XmlPickle[T] = {
     Pickle(
       parser = aggregateParser.build(gen),
       serializer = aggregateSerializer.build(gen)
