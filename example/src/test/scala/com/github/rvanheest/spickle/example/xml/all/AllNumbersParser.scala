@@ -46,7 +46,6 @@ class AllNumbersParser extends FlatSpec with Matchers with OptionValues with Ins
         result.x shouldBe 24
         result.y shouldBe 25
         result.z shouldBe 26
-        result.other.value shouldBe 27
     }
   }
 
@@ -84,7 +83,6 @@ class AllNumbersParser extends FlatSpec with Matchers with OptionValues with Ins
         result.x shouldBe 24
         result.y shouldBe 25
         result.z shouldBe 26
-        result.other shouldBe empty
     }
   }
 
