@@ -3,7 +3,7 @@ package com.github.rvanheest.spickle.pickle
 import com.github.rvanheest.spickle.parser.Parser
 import com.github.rvanheest.spickle.serializer.Serializer
 
-import scala.reflect.{ ClassTag, classTag }
+import scala.reflect.ClassTag
 import scala.util.Try
 
 class Pickle[State, A](private[pickle] val serializer: Serializer[State, A],
@@ -21,7 +21,7 @@ class Pickle[State, A](private[pickle] val serializer: Serializer[State, A],
 
   def seqId: SeqBuilder[State, A, A] = new SeqBuilder(this, identity)
 
-  def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Pickle[State, B] = {
+  def upcast[B >: A](implicit ctA: ClassTag[A]): Pickle[State, B] = {
     Pickle(
       serializer = serializer.upcast[B],
       parser = parser.map(identity)

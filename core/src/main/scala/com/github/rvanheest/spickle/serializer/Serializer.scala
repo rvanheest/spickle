@@ -31,7 +31,7 @@ class Serializer[State, A](private[serializer] val serializer: (A, State) => Try
     })
   }
 
-  def upcast[B >: A](implicit ctA: ClassTag[A], ctB: ClassTag[B]): Serializer[State, B] = {
+  def upcast[B >: A](implicit ctA: ClassTag[A]): Serializer[State, B] = {
     this.contramap {
       case a: A => a
       case x => throw SerializerFailedException(s"can't cast ${ x.getClass } to ${ classTag[A] }")
