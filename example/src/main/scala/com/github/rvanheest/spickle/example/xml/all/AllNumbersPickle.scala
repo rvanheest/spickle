@@ -3,7 +3,7 @@ package com.github.rvanheest.spickle.example.xml.all
 import java.nio.file.Paths
 
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
-import shapeless.{ ::, HNil }
+import shapeless.{ ::, Generic, HNil }
 
 import scala.language.postfixOps
 import scala.util.Success
@@ -14,13 +14,13 @@ object AllNumbersPickleRunner extends App {
   val path = Paths.get(getClass.getResource("/all/numbers.xml").toURI)
   val xml = Utility.trim(XML.loadFile(path.toFile))
 
-  val parse @ (Success(numbers), rest) = AllNumberPickle.parseNumbers.parse(xml)
+  val parse @ (Success(numbers), rest) = AllNumberPickle.pickleNumbers.parse(xml)
   println(parse)
 
-  val pickle @ Success(pickledXml) = AllNumberPickle.parseNumbers.serialize(numbers, rest)
+  val pickle @ Success(pickledXml) = AllNumberPickle.pickleNumbers.serialize(numbers, rest)
   println(pickle)
 
-  val parse2 = AllNumberPickle.parseNumbers.parse(pickledXml)
+  val parse2 = AllNumberPickle.pickleNumbers.parse(pickledXml)
   println(parse2)
 }
 
@@ -33,10 +33,12 @@ object AllNumberPickle {
                      u: Int, v: Int, w: Int, x: Int, y: Int,
                      z: Int)
 
-  def parseNumbers: XmlPickle[Numbers] = {
+  def pickleNumbers: XmlPickle[Numbers] = {
     branchNode("numbers")(pickleAllNumbers)
   }
 
+  // when the elements are defined in the same order as the class,
+  // first _.reverse needs to be called
   def pickleAllNumbers: XmlPickle[Numbers] = {
     fromAllOptional(pickleNumber('a'))
       .andOptional(pickleNumber('b'))
@@ -64,19 +66,40 @@ object AllNumberPickle {
       .andMandatory(pickleNumber('x'))
       .andMandatory(pickleNumber('y'))
       .andMandatory(pickleNumber('z'))
-      .build
-      .seq[Numbers] {
-        case Numbers(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26) =>
-          p26 :: p25 :: p24 :: p23 :: p22 :: p21 :: p20 :: p19 :: p18 :: p17 :: p16 :: p15 :: p14 :: p13 :: p12 :: p11 :: p10 :: p9 :: p8 :: p7 :: p6 :: p5 :: p4 :: p3 :: p2 :: p1 :: HNil
-      }
-      .map {
-        case p26 :: p25 :: p24 :: p23 :: p22 :: p21 ::
-          p20 :: p19 :: p18 :: p17 :: p16 :: p15 :: p14 :: p13 :: p12 :: p11 ::
-          p10 :: p9 :: p8 :: p7 :: p6 :: p5 :: p4 :: p3 :: p2 :: p1 :: HNil =>
-          Numbers(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10,
-            p11, p12, p13, p14, p15, p16, p17, p18, p19, p20,
-            p21, p22, p23, p24, p25, p26)
-      }
+      .seq[Option[Int] :: Option[Int] :: Option[Int] :: Option[Int] :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: HNil](_.reverse).map(_.reverse)
+      .build(Generic[Numbers])
+  }
+
+  // when the elements are defined in reversed order, relative to the class,
+  // _.reverse doesn't need to be called
+  def pickleAllNumbers2: XmlPickle[Numbers] = {
+    fromAllMandatory(pickleNumber('z'))
+      .andMandatory(pickleNumber('y'))
+      .andMandatory(pickleNumber('x'))
+      .andMandatory(pickleNumber('w'))
+      .andMandatory(pickleNumber('v'))
+      .andMandatory(pickleNumber('u'))
+      .andMandatory(pickleNumber('t'))
+      .andMandatory(pickleNumber('s'))
+      .andMandatory(pickleNumber('r'))
+      .andMandatory(pickleNumber('q'))
+      .andMandatory(pickleNumber('p'))
+      .andMandatory(pickleNumber('o'))
+      .andMandatory(pickleNumber('n'))
+      .andMandatory(pickleNumber('m'))
+      .andMandatory(pickleNumber('l'))
+      .andMandatory(pickleNumber('k'))
+      .andMandatory(pickleNumber('j'))
+      .andMandatory(pickleNumber('i'))
+      .andMandatory(pickleNumber('h'))
+      .andMandatory(pickleNumber('g'))
+      .andMandatory(pickleNumber('f'))
+      .andMandatory(pickleNumber('e'))
+      .andOptional(pickleNumber('d'))
+      .andOptional(pickleNumber('c'))
+      .andOptional(pickleNumber('b'))
+      .andOptional(pickleNumber('a'))
+      .build(Generic[Numbers])
   }
 
   def pickleNumber(label: Char): XmlPickle[Int] = {

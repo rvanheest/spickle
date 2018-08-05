@@ -8,7 +8,18 @@ class Serializer[State, A](private[serializer] val serializer: (A, State) => Try
   def serialize(a: A, state: State): Try[State] = serializer(a, state)
 
   def contramap[B](f: B => A): Serializer[State, B] = {
-    Serializer((b, state) => Try { f(b) } flatMap (a => this.serializer(a, state)))
+    Serializer((b, state) => for {
+      a <- Try { f(b) }
+      state2 <- this.serializer(a, state)
+    } yield state2)
+  }
+
+  private[spickle] def contramapCombine[B](f: B => A, g: A => Serializer[State, B]): Serializer[State, B] = {
+    Serializer((b, state) => for {
+      a <- Try { f(b) }
+      state2 <- g(a).serialize(b, state)
+      state3 <- this.serialize(a, state2)
+    } yield state3)
   }
 
   def combine(that: Serializer[State, A]): Serializer[State, A] = {

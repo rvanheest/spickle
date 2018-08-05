@@ -1,9 +1,9 @@
 package com.github.rvanheest.spickle.example.xml.all
 
 import com.github.rvanheest.spickle.example.xml.all.AllNumberSerializer.Numbers
-import com.github.rvanheest.spickle.serializer.xml.AllSerializerBuilder
+import com.github.rvanheest.spickle.serializer.xml.AllSerializerBuilder._
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
-import shapeless.HNil
+import shapeless.{ ::, Generic, HNil }
 
 import scala.language.postfixOps
 import scala.util.Success
@@ -34,8 +34,10 @@ object AllNumberSerializer {
     branchNode("numbers")(serializeAllNumbers)
   }
 
+  // when the elements are defined in the same order as the class,
+  // first _.reverse needs to be called
   def serializeAllNumbers: XmlSerializer[Numbers] = {
-    AllSerializerBuilder.fromOptional(serializeNumber('a'))
+    fromOptional(serializeNumber('a'))
       .andOptional(serializeNumber('b'))
       .andOptional(serializeNumber('c'))
       .andOptional(serializeNumber('d'))
@@ -61,11 +63,40 @@ object AllNumberSerializer {
       .andMandatory(serializeNumber('x'))
       .andMandatory(serializeNumber('y'))
       .andMandatory(serializeNumber('z'))
-      .build
-      .contramap[Numbers] {
-        case Numbers(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26) =>
-          p26 :: p25 :: p24 :: p23 :: p22 :: p21 :: p20 :: p19 :: p18 :: p17 :: p16 :: p15 :: p14 :: p13 :: p12 :: p11 :: p10 :: p9 :: p8 :: p7 :: p6 :: p5 :: p4 :: p3 :: p2 :: p1 :: HNil
-      }
+      .contramap[Option[Int] :: Option[Int] :: Option[Int] :: Option[Int] :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: HNil](_.reverse)
+      .build(Generic[Numbers])
+  }
+
+  // when the elements are defined in reversed order, relative to the class,
+  // _.reverse doesn't need to be called
+  def serializeAllNumbers2: XmlSerializer[Numbers] = {
+    fromAllMandatory(serializeNumber('z'))
+      .andMandatory(serializeNumber('y'))
+      .andMandatory(serializeNumber('x'))
+      .andMandatory(serializeNumber('w'))
+      .andMandatory(serializeNumber('v'))
+      .andMandatory(serializeNumber('u'))
+      .andMandatory(serializeNumber('t'))
+      .andMandatory(serializeNumber('s'))
+      .andMandatory(serializeNumber('r'))
+      .andMandatory(serializeNumber('q'))
+      .andMandatory(serializeNumber('p'))
+      .andMandatory(serializeNumber('o'))
+      .andMandatory(serializeNumber('n'))
+      .andMandatory(serializeNumber('m'))
+      .andMandatory(serializeNumber('l'))
+      .andMandatory(serializeNumber('k'))
+      .andMandatory(serializeNumber('j'))
+      .andMandatory(serializeNumber('i'))
+      .andMandatory(serializeNumber('h'))
+      .andMandatory(serializeNumber('g'))
+      .andMandatory(serializeNumber('f'))
+      .andMandatory(serializeNumber('e'))
+      .andOptional(serializeNumber('d'))
+      .andOptional(serializeNumber('c'))
+      .andOptional(serializeNumber('b'))
+      .andOptional(serializeNumber('a'))
+      .build(Generic[Numbers])
   }
 
   def serializeNumber(label: Char): XmlSerializer[Int] = {

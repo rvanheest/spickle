@@ -4,6 +4,7 @@ import com.github.rvanheest.spickle.parser.ParserFailedException
 import com.github.rvanheest.spickle.parser.xml.XmlParser
 import com.github.rvanheest.spickle.parser.xml.XmlParser.{ stringNode, _ }
 import org.scalatest.{ FlatSpec, Inside, Matchers }
+import shapeless.Generic
 
 import scala.util.{ Failure, Success }
 import scala.xml.{ NamespaceBinding, TopScope, Utility }
@@ -300,6 +301,81 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val (result, remainder) = fooParser.parse(input)
     result should matchPattern { case Success((Some("blabla"), Some("albalb"), Some("xyzxyz"))) => }
+    remainder shouldBe empty
+  }
+
+  "build" should "construct an object from the all builders" in {
+    case class Foo(abc: String, `def`: String, ghi: Option[String])
+
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+        <ghi>xyzxyz</ghi>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val ghiParser = stringNode("ghi")
+    val combined = XmlParser.fromAllOptional(ghiParser)
+      .andMandatory(defParser)
+      .andMandatory(abcParser)
+      .build(Generic[Foo])
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    result should matchPattern { case Success(Foo("blabla", "albalb", Some("xyzxyz"))) => }
+    remainder shouldBe empty
+  }
+
+  it should "construct an object from the all builders when the optional element is not present" in {
+    case class Foo(abc: String, `def`: String, ghi: Option[String])
+
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val ghiParser = stringNode("ghi")
+    val combined = XmlParser.fromAllOptional(ghiParser)
+      .andMandatory(defParser)
+      .andMandatory(abcParser)
+      .build(Generic[Foo])
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    result should matchPattern { case Success(Foo("blabla", "albalb", None)) => }
+    remainder shouldBe empty
+  }
+
+  it should "construct an object from the all builders when the declared order is reversed" in {
+    case class Foo(abc: String, `def`: String, ghi: Option[String])
+
+    val input = Utility.trim(
+      <foo>
+        <abc>blabla</abc>
+        <def>albalb</def>
+        <ghi>xyzxyz</ghi>
+      </foo>
+    )
+
+    val abcParser = stringNode("abc")
+    val defParser = stringNode("def")
+    val ghiParser = stringNode("ghi")
+    val combined = XmlParser.fromAllMandatory(abcParser)
+      .andMandatory(defParser)
+      .andOptional(ghiParser)
+      .map(_.reverse)
+      .build(Generic[Foo])
+    val fooParser = branchNode("foo")(combined)
+
+    val (result, remainder) = fooParser.parse(input)
+    result should matchPattern { case Success(Foo("blabla", "albalb", Some("xyzxyz"))) => }
     remainder shouldBe empty
   }
 }

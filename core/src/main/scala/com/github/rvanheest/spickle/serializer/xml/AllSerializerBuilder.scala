@@ -1,7 +1,7 @@
 package com.github.rvanheest.spickle.serializer.xml
 
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.XmlSerializer
-import shapeless.{ ::, HList, HNil }
+import shapeless.{ ::, Generic, HList, HNil }
 
 class AllSerializerBuilder[MyHList <: HList] private(private val aggregate: XmlSerializer[MyHList]) {
 
@@ -20,6 +20,23 @@ class AllSerializerBuilder[MyHList <: HList] private(private val aggregate: XmlS
   }
 
   def build: XmlSerializer[MyHList] = aggregate
+
+  def build[T](gen: Generic[T] {type Repr = MyHList}): XmlSerializer[T] = {
+    aggregate contramap gen.to
+  }
+
+  def contramap[MyHList2 <: HList](f: MyHList2 => MyHList): AllSerializerBuilder[MyHList2] = {
+    new AllSerializerBuilder(aggregate contramap f)
+  }
+
+  def combine(that: AllSerializerBuilder[MyHList]): AllSerializerBuilder[MyHList] = {
+    new AllSerializerBuilder(aggregate combine that.aggregate)
+  }
+
+  def contramapCombine[MyHList2 <: HList](f: MyHList2 => MyHList,
+                                          g: MyHList => AllSerializerBuilder[MyHList2]): AllSerializerBuilder[MyHList2] = {
+    new AllSerializerBuilder[MyHList2](aggregate.contramapCombine(f, g(_).aggregate))
+  }
 }
 
 object AllSerializerBuilder {

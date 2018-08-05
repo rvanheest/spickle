@@ -3,7 +3,7 @@ package com.github.rvanheest.spickle.parser.xml
 import com.github.rvanheest.spickle.parser.xml.AllParserBuilder._
 import com.github.rvanheest.spickle.parser.xml.XmlParser.XmlParser
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
-import shapeless.{ ::, HList, HNil }
+import shapeless.{ ::, Generic, HList, HNil }
 
 import scala.annotation.tailrec
 import scala.util.{ Failure, Success, Try }
@@ -24,6 +24,21 @@ class AllParserBuilder[MyHList <: HList] private(private val aggregate: XmlParse
   }
 
   def build: XmlParser[MyHList] = aggregate
+
+  def build[T](gen: Generic[T] {type Repr = MyHList}): XmlParser[T] = {
+    aggregate map gen.from
+  }
+
+  def map[MyHList2 <: HList](f: MyHList => MyHList2): AllParserBuilder[MyHList2] = {
+    new AllParserBuilder[MyHList2](aggregate map f)
+  }
+
+  def filter(predicate: MyHList => Boolean): AllParserBuilder[MyHList] = {
+    new AllParserBuilder(aggregate filter predicate)
+  }
+
+  def flatMap[MyHList2 <: HList](f: MyHList => AllParserBuilder[MyHList2]): AllParserBuilder[MyHList2] = {
+    new AllParserBuilder[MyHList2](aggregate.flatMap(f(_).aggregate))
   }
 }
 
