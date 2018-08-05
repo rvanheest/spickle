@@ -91,7 +91,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     } yield bars.mkString(" ")
 
     branchNode("foo")(subParser).parse(Utility.trim(input)) should matchPattern {
-      case (Success("hello world"), Seq(<baz>!</baz>)) =>
+      case (Success("hello world"), Nil) =>
     }
   }
 
@@ -104,9 +104,9 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
         <baz>!</baz>
       </foo>,
       <foo>
-        <bar>hello</bar>
-        <bar>world</bar>
-        <baz>!</baz>
+        <bar>hello2</bar>
+        <bar>world2</bar>
+        <baz>!2</baz>
       </foo>
       // @formatter:on
     )
@@ -117,7 +117,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     branchNode("foo")(subParser).parse(input map Utility.trim) should matchPattern {
       // @formatter:off
-      case (Success("hello world"), Seq(<baz>!</baz>, <foo><bar>hello</bar><bar>world</bar><baz>!</baz></foo>)) =>
+      case (Success("hello world"), Seq(<foo><bar>hello2</bar><bar>world2</bar><baz>!2</baz></foo>)) =>
       // flattened structure in second foo is intentional; this was flattened in the Utility.trim above
       // @formatter:on
     }

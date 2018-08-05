@@ -35,9 +35,7 @@ object XmlParser {
 
   def branchNode[A](name: String)(subParser: XmlParser[A]): XmlParser[A] = {
     Parser(node(name).map(_.child).parse(_) match {
-      case (Success(childNodes), rest) =>
-        val (r, rest2) = subParser.parse(childNodes)
-        (r, rest2 ++ rest)
+      case (Success(childNodes), rest) => (subParser.eval(childNodes), rest)
       case (Failure(e), rest) => (Failure(e), rest)
     })
   }
