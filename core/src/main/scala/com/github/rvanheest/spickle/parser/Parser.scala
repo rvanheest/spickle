@@ -51,10 +51,13 @@ class Parser[S, A](private[parser] val parser: S => (Try[A], S)) {
    * @tparam B the result type of the `other` parser; being a supertype of `A`
    * @return either this parser if it succeeds, or `other` parser otherwise
    */
-  def orElse[B >: A](other: => Parser[S, B]): Parser[S, B] = {
+  def orElse[C, B](other: => Parser[S, B])(implicit ev: B <:< C, ev2: A <:< C): Parser[S, C] = {
     Parser(st => parse(st) match {
-      case res @ (Success(_), _) => res
-      case (Failure(_), _) => other.parse(st)
+      case (Success(a), rest) => (Success(a), rest)
+      case (Failure(_), _) => other.parse(st) match {
+        case (Success(b), rest) => (Success(b), rest)
+        case (Failure(e), rest) => (Failure(e), rest)
+      }
     })
   }
 
@@ -68,7 +71,7 @@ class Parser[S, A](private[parser] val parser: S => (Try[A], S)) {
    * @tparam B the result type of the `other` parser; being a supertype of `A`
    * @return either this parser if it succeeds, or `other` parser otherwise
    */
-  def <|>[B >: A](other: => Parser[S, B]): Parser[S, B] = this.orElse(other)
+  def <|>[C >: A, B](other: => Parser[S, B])(implicit ev: B <:< C): Parser[S, C] = this.orElse(other)
 
   /**
    * Convert each token that is parsed with this parser using function `f`.

@@ -14,7 +14,7 @@ trait PersonParser {
     } yield Number(number, addition)
   }
 
-  def parseRealAddress(name: String): XmlParser[Address] = {
+  def parseRealAddress(name: String): XmlParser[RealAddress] = {
     for {
       // no attributes here
       address <- branchNode(name) {
@@ -28,7 +28,7 @@ trait PersonParser {
     } yield address
   }
 
-  def parseFreepostAddress(name: String): XmlParser[Address] = {
+  def parseFreepostAddress(name: String): XmlParser[FreepostAddress] = {
     for {
       // no attributes here
       address <- branchNode(name) {
@@ -46,7 +46,7 @@ trait PersonParser {
   }
 
   def parsePerson: XmlParser[Person] = {
-    implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
       age <- attribute("age").toInt
       _ <- namespaceAttribute("age").toInt

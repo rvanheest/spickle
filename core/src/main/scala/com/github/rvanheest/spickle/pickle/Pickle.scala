@@ -31,7 +31,7 @@ class Pickle[State, A](private[pickle] val serializer: Serializer[State, A],
   def orElse(other: => Pickle[State, A]): Pickle[State, A] = {
     Pickle(
       serializer = this.serializer orElse other.serializer,
-      parser = this.parser <|> other.parser
+      parser = this.parser orElse other.parser
     )
   }
 
