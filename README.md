@@ -3,7 +3,7 @@ spickle
 [![Build Status](https://travis-ci.com/rvanheest/spickle.svg?branch=master)](https://travis-ci.com/rvanheest/spickle)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fa0990cb9bbf414ebf7cd94b60a93e19)](https://www.codacy.com/app/rvanheest/spickle?utm_source=github.com&utm_medium=referral&utm_content=rvanheest/spickle&utm_campaign=badger)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/fa0990cb9bbf414ebf7cd94b60a93e19)](https://www.codacy.com/app/rvanheest/spickle?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rvanheest/spickle&amp;utm_campaign=Badge_Coverage)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.rvanheest/spickle/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.rvanheest.spickle)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.rvanheest/spickle_2.12/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.rvanheest.spickle)
 
 **spickle** is a library for serializing, parsing and pickling data in Scala.
 
