@@ -242,7 +242,7 @@ between object model and JSON._
 _Sure! I would start with the parser, after which the serializer and pickler are relatively simple
 to write. Think of atomic units in your data type and write a parser and serializer for those first.
 Then use these atomics to construct complexer units of your data type, until you have parsers for the
-whole data type. Look at the examples for strings and XML for inspiration.
+whole data type. Look at the examples for strings and XML for inspiration._
 
-Besides, always feel free to contribute to **spickle**! If you think other people might benefit from
+_Besides, always feel free to contribute to **spickle**! If you think other people might benefit from
 your picklers as well, send a pull request._
