@@ -2,6 +2,7 @@ package com.github.rvanheest.spickle.example.xml.all
 
 import java.nio.file.Paths
 
+import com.github.rvanheest.spickle.example.xml.all.All.Person
 import com.github.rvanheest.spickle.parser.xml.XmlParser.{ XmlParser, _ }
 
 import scala.xml.{ Utility, XML }
@@ -15,7 +16,6 @@ object PersonParserRunner extends App {
 }
 
 object PersonParser {
-  case class Person(firstName: String, lastName: String, age: Int)
 
   def parseFirstName: XmlParser[String] = stringNode("firstname")
 

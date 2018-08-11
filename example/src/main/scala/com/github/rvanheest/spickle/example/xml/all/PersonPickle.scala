@@ -2,6 +2,7 @@ package com.github.rvanheest.spickle.example.xml.all
 
 import java.nio.file.Paths
 
+import com.github.rvanheest.spickle.example.xml.all.All.Person
 import com.github.rvanheest.spickle.pickle.Pickle._
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
 import shapeless.HNil
@@ -25,7 +26,6 @@ object PersonPickleRunner extends App {
 }
 
 object PersonPickle {
-  case class Person(firstName: String, lastName: String, age: Int)
 
   def pickleFirstname: XmlPickle[String] = stringNode("firstname")
 

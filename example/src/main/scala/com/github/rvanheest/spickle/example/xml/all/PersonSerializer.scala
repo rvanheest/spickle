@@ -1,5 +1,6 @@
 package com.github.rvanheest.spickle.example.xml.all
 
+import com.github.rvanheest.spickle.example.xml.all.All.Person
 import com.github.rvanheest.spickle.example.xml.all.PersonSerializer.Person
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
 import shapeless.HNil
@@ -22,7 +23,6 @@ object PersonSerializerRunner extends App {
 }
 
 object PersonSerializer extends App {
-  case class Person(firstName: String, lastName: String, age: Int)
 
   def serializeFirstname: XmlSerializer[String] = stringNode("firstname")
 
