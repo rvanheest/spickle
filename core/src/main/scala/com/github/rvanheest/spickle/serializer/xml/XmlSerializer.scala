@@ -15,7 +15,7 @@ object XmlSerializer {
   }
 
   def emptyNode(name: String): XmlSerializer[Unit] = {
-    node(name).contramap[Unit](_ => <xml/>.copy(label = name))
+    node(name).contramap(_ => <xml/>.copy(label = name))
   }
 
   def node(name: String): XmlSerializer[Node] = {
@@ -26,7 +26,7 @@ object XmlSerializer {
   }
 
   def stringNode(name: String): XmlSerializer[String] = {
-    node(name).contramap[String](s => <xml>{s}</xml>.copy(label = name))
+    node(name).contramap(s => <xml>{s}</xml>.copy(label = name))
   }
 
   def branchNode[A](name: String)(serializerA: XmlSerializer[A]): XmlSerializer[A] = {

@@ -64,9 +64,7 @@ class Serializer[State, A](private[serializer] val serializer: (A, State) => Try
   }
 
   def atLeastOnce: Serializer[State, Seq[A]] = {
-    val headSerializer = this.contramap[Seq[A]](_.head)
-    val tailSerializer = many.contramap[Seq[A]](_.tail)
-    headSerializer.combine(tailSerializer)
+    this.contramap[Seq[A]](_.head).combine(many.contramap(_.tail))
   }
 
   def takeUntil(predicate: A => Boolean): Serializer[State, Seq[A]] = takeWhile(!predicate(_))
@@ -80,13 +78,11 @@ class Serializer[State, A](private[serializer] val serializer: (A, State) => Try
   }
 
   def separatedBy1[Sep](separator: Sep)(sep: Serializer[State, Sep]): Serializer[State, Seq[A]] = {
-    val headSerializer = this.contramap[Seq[A]](_.head)
-    val tailSerializer = sep.contramap[A](_ => separator)
-      .combine(this)
-      .many
-      .contramap[Seq[A]](_.tail)
-
-    headSerializer.combine(tailSerializer)
+    this.contramap[Seq[A]](_.head)
+      .combine(sep.contramap[A](_ => separator)
+        .combine(this)
+        .many
+        .contramap(_.tail))
   }
 }
 

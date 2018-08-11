@@ -64,6 +64,7 @@ object XsChoiceManySerializer {
 
   case class Data(e: EHolder, a: A, as: Seq[A], bs: Seq[B], cs: Seq[CHolder], ds: Seq[DHolder], f: FHolder) {
     override def toString: String = {
+      // @formatter:off
       s"""Mixed
          |  e:  $e
          |  a:  $a
@@ -72,6 +73,7 @@ object XsChoiceManySerializer {
          |  cs: ${ if (cs.isEmpty) "<none>" else cs.mkString("\n    - ", "\n    - ", "") }
          |  ds: ${ if (ds.isEmpty) "<none>" else ds.mkString("\n    - ", "\n    - ", "") }
          |  f:  $f""".stripMargin
+      // @formatter:on
     }
   }
 
@@ -100,7 +102,7 @@ object XsChoiceManySerializer {
 
   def serializeD: XmlSerializer[DHolder] = serializeD1.upcast[DHolder] orElse serializeD2.upcast[DHolder]
 
-  def serializeD1: XmlSerializer[D1Holder] = stringNode("d1").contramap[D1Holder](_.d1)
+  def serializeD1: XmlSerializer[D1Holder] = stringNode("d1").contramap(_.d1)
 
   def serializeD2: XmlSerializer[D2Holder] = {
     branchNode("d2") {
@@ -111,13 +113,13 @@ object XsChoiceManySerializer {
 
   def serializeE: XmlSerializer[EHolder] = {
     branchNode("e") {
-      stringNode("a").contramap[EHolder](_.a)
+      stringNode("a").contramap(_.a)
     }
   }
 
   def serializeF: XmlSerializer[FHolder] = {
     branchNode("f") {
-      stringNode("a").contramap[FHolder](_.a)
+      stringNode("a").contramap(_.a)
     }
   }
 }
