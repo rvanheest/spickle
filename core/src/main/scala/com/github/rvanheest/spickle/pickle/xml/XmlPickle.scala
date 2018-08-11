@@ -6,11 +6,16 @@ import com.github.rvanheest.spickle.serializer.xml.XmlSerializer
 import shapeless.{ ::, HNil }
 
 import scala.language.reflectiveCalls
-import scala.xml.{ NamespaceBinding, Node }
+import scala.util.Try
+import scala.xml.{ NamespaceBinding, Node, NodeSeq }
 
 object XmlPickle {
 
   type XmlPickle[A] = Pickle[Seq[Node], A]
+
+  implicit class XmlPickleExtension[A](val pickle: XmlPickle[A]) extends AnyVal {
+    def serialize(input: A): Try[Seq[Node]] = pickle.serialize(input, NodeSeq.Empty)
+  }
 
   def emptyNode(name: String): XmlPickle[Unit] = {
     Pickle(

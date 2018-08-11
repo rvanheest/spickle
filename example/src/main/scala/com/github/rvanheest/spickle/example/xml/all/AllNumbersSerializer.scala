@@ -15,7 +15,7 @@ object AllNumbersSerializerRunner extends App {
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26)
 
-  val Success(xmls) = AllNumberSerializer.serializeNumbers.serialize(numbers, Seq.empty)
+  val Success(xmls) = AllNumberSerializer.serializeNumbers.serialize(numbers)
   for (xml <- xmls) {
     println(new PrettyPrinter(160, 2).format(xml))
   }

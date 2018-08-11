@@ -3,10 +3,10 @@ package com.github.rvanheest.spickle.example.xml.all
 import java.nio.file.Paths
 
 import com.github.rvanheest.spickle.example.xml.all.AllNumberPickle._
+import com.github.rvanheest.spickle.pickle.xml.XmlPickle._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
 import scala.util.Success
-import scala.xml.transform.{ RewriteRule, RuleTransformer }
 import scala.xml._
 
 class AllNumbersPickleSpec extends FlatSpec with Matchers with Inside {
@@ -19,7 +19,7 @@ class AllNumbersPickleSpec extends FlatSpec with Matchers with Inside {
       case (Success(result), remainder) =>
         remainder shouldBe empty
 
-        inside(pickleNumbers.serialize(result, Seq.empty)) {
+        inside(pickleNumbers.serialize(result)) {
           case Success(Seq(xmlAfter)) =>
             val xmlExpected = <numbers>
               <a>1</a>
@@ -63,7 +63,7 @@ class AllNumbersPickleSpec extends FlatSpec with Matchers with Inside {
       case (Success(result), remainder) =>
         remainder shouldBe empty
 
-        inside(pickleNumbers.serialize(result, Seq.empty)) {
+        inside(pickleNumbers.serialize(result)) {
           case Success(Seq(xmlAfter)) =>
             val xmlExpected = <numbers>
               <b>2</b>

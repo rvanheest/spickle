@@ -1,12 +1,14 @@
 package com.github.rvanheest.spickle.example.xml.person
 
+import com.github.rvanheest.spickle.pickle.xml.XmlPickle._
+
 import scala.util.Success
 import scala.xml.PrettyPrinter
 
 object PersonPickleExample extends App with Person with PersonXml with PersonPickle {
 
   val (Success(person1), rest1) = picklePerson.parse(xml1)
-  val Success(person1Xml) = picklePerson.serialize(person1, Seq.empty)
+  val Success(person1Xml) = picklePerson.serialize(person1)
 
   println(person1)
   println(rest1)
@@ -18,7 +20,7 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
   println
 
   val (Success(person2), rest2) = picklePerson.parse(xml2)
-  val Success(person2Xml) = picklePerson.serialize(person2, Seq.empty)
+  val Success(person2Xml) = picklePerson.serialize(person2)
 
   println(person2)
   println(rest2)
@@ -30,7 +32,7 @@ object PersonPickleExample extends App with Person with PersonXml with PersonPic
   println
 
   val (Success(person3), rest3) = picklePerson.parse(xml3)
-  val Success(person3Xml) = picklePerson.serialize(person3, Seq.empty)
+  val Success(person3Xml) = picklePerson.serialize(person3)
 
   println(person3)
   println(rest3)
