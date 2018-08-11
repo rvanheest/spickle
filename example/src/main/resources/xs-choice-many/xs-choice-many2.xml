@@ -1,0 +1,12 @@
+<mixed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="xs-choice-many.xsd">
+    <e>
+        <a>abcdef</a>
+    </e>
+    <a>klm</a>
+    <!-- choice starts here -->
+    <!-- choice ends here -->
+    <f>
+        <a>xyz</a>
+    </f>
+</mixed>
