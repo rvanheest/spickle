@@ -2,7 +2,7 @@ package com.github.rvanheest.spickle.test.parser.xml
 
 import com.github.rvanheest.spickle.parser.ParserFailedException
 import com.github.rvanheest.spickle.parser.xml.XmlParser
-import com.github.rvanheest.spickle.parser.xml.XmlParser.{ stringNode, _ }
+import com.github.rvanheest.spickle.parser.xml.XmlParser._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 import shapeless.Generic
 
@@ -377,5 +377,63 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     val (result, remainder) = fooParser.parse(input)
     result should matchPattern { case Success(Foo("blabla", "albalb", Some("xyzxyz"))) => }
     remainder shouldBe empty
+  }
+
+  "collect" should "parse all nodes that satisfy the given parser, and leave the others in the remaining input" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <klm>random3</klm>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+    val parser = collect(stringNode("abc"))
+
+    val (result, remainder) = parser.parse(input)
+    result should matchPattern { case Success(Seq("test1", "test2", "test3", "test4")) => }
+    remainder should contain only (
+      <def>random1</def>,
+      <ghi>random2</ghi>,
+      <klm>random3</klm>,
+    )
+  }
+
+  it should "pass the remaining input to the next 'collect' parser" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <def>random3</def>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+    val parser = for {
+      abcs <- collect(stringNode("abc"))
+      defs <- collect(stringNode("def"))
+    } yield (abcs, defs)
+
+    val (result, remainder) = parser.parse(input)
+    result should matchPattern { case Success((Seq("test1", "test2", "test3", "test4"), Seq("random1", "random3"))) => }
+    remainder should contain only <ghi>random2</ghi>
+  }
+
+  it should "don't collect any nodes if they all don't satisfy the parser" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <klm>random3</klm>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+    val parser = collect(stringNode("unknown-node"))
+
+    val (result, remainder) = parser.parse(input)
+    result should matchPattern { case Success(Seq()) => }
+    remainder shouldBe input
   }
 }

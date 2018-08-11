@@ -61,4 +61,11 @@ object XmlPickle {
   def fromAllOptional[T](parser: XmlPickle[T]): AllPickleBuilder[Option[T] :: HNil] = {
     AllPickleBuilder.fromOptional(parser)
   }
+
+  def collect[T](pickle: XmlPickle[T]): XmlPickle[Seq[T]] = {
+    Pickle(
+      serializer = XmlSerializer.collect(pickle.serializer),
+      parser = XmlParser.collect(pickle.parser)
+    )
+  }
 }
