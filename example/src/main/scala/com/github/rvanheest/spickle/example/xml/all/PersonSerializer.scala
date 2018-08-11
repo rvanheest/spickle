@@ -15,7 +15,7 @@ object PersonSerializerRunner extends App {
   val persons = List(person1, person2, person3)
   val nums = List(1, 2, 3, 4, 5)
 
-  val Success(xmls) = PersonSerializer.serializePersons.serialize((persons, nums), Seq.empty)
+  val Success(xmls) = PersonSerializer.serializePersons.serialize((persons, nums))
   for (xml <- xmls) {
     println(new PrettyPrinter(160, 2).format(xml))
   }

@@ -1,6 +1,7 @@
 package com.github.rvanheest.spickle.example.xml.all
 
 import com.github.rvanheest.spickle.example.xml.all.AllNumberSerializer._
+import com.github.rvanheest.spickle.serializer.xml.XmlSerializer._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
 import scala.util.Success
@@ -12,7 +13,7 @@ class AllNumbersSerializerSpec extends FlatSpec with Matchers with Inside {
     val numbers = Numbers(Option(1), Option(2), Option(3), Option(4), 5, 6, 7, 8, 9, 10,
       11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26)
 
-    inside(serializeNumbers.serialize(numbers, Seq.empty)) {
+    inside(serializeNumbers.serialize(numbers)) {
       case Success(xml) =>
         xml should contain only Utility.trim(
           <numbers>
@@ -52,7 +53,7 @@ class AllNumbersSerializerSpec extends FlatSpec with Matchers with Inside {
       11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
       21, 22, 23, 24, 25, 26)
 
-    inside(serializeNumbers.serialize(numbers, Seq.empty)) {
+    inside(serializeNumbers.serialize(numbers)) {
       case Success(xml) =>
         xml should contain only Utility.trim(
           <numbers>

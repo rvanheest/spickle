@@ -10,6 +10,10 @@ object XmlSerializer {
 
   type XmlSerializer[A] = Serializer[Seq[Node], A]
 
+  implicit class XmlSerializerExtension[A](val serializer: XmlSerializer[A]) extends AnyVal {
+    def serialize(input: A): Try[Seq[Node]] = serializer.serialize(input, NodeSeq.Empty)
+  }
+
   def emptyNode(name: String): XmlSerializer[Unit] = {
     node(name).contramap[Unit](_ => <xml/>.copy(label = name))
   }

@@ -1,12 +1,9 @@
 package com.github.rvanheest.spickle.test.serializer.xml
 
-import com.github.rvanheest.spickle.serializer.Serializer
-import com.github.rvanheest.spickle.serializer.xml.XmlSerializer
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
-import scala.util.{ Failure, Success }
-import scala.xml.{ NamespaceBinding, Node, TopScope, Utility }
+import scala.util.Success
 
 class XmlSerializerTest extends FlatSpec with Matchers with Inside {
 
@@ -14,7 +11,7 @@ class XmlSerializerTest extends FlatSpec with Matchers with Inside {
     val input = Seq("test1", "test2", "test3", "test4")
     val serializer = collect(stringNode("abc"))
 
-    inside(serializer.serialize(input, Seq.empty)) {
+    inside(serializer.serialize(input)) {
       case Success(xml) =>
         xml should contain inOrderOnly (
           <abc>test1</abc>,
@@ -33,7 +30,7 @@ class XmlSerializerTest extends FlatSpec with Matchers with Inside {
     val serializer = abcSerializer.contramap[(Seq[String], Seq[String])] { case (seq1, _) => seq1 }
       .combine(defSerializer.contramap { case (_, seq2) => seq2 } )
 
-    inside(serializer.serialize(input, Seq.empty)) {
+    inside(serializer.serialize(input)) {
       case Success(xml) =>
         xml should contain inOrderOnly (
           <abc>test1</abc>,
@@ -50,6 +47,6 @@ class XmlSerializerTest extends FlatSpec with Matchers with Inside {
     val input = Seq.empty[String]
     val serializer = collect(stringNode("abc"))
 
-    serializer.serialize(input, Seq.empty) should matchPattern { case Success(Seq()) => }
+    serializer.serialize(input) should matchPattern { case Success(Seq()) => }
   }
 }
