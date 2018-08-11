@@ -58,4 +58,8 @@ object XmlSerializer {
   def fromAllOptional[T](serializer: XmlSerializer[T]): AllSerializerBuilder[Option[T] :: HNil] = {
     AllSerializerBuilder.fromOptional(serializer)
   }
+
+  def collect[T](serializer: XmlSerializer[T]): XmlSerializer[Seq[T]] = {
+    serializer.many
+  }
 }

@@ -210,4 +210,142 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
       case Success(Seq(`output`)) =>
     }
   }
+
+  "collect" should "parse all nodes that satisfy the given parser" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <klm>random3</klm>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+    val pickle = collect(stringNode("abc"))
+
+    val (result, remainder) = pickle.parse(input)
+    result should matchPattern { case Success(Seq("test1", "test2", "test3", "test4")) => }
+    remainder should contain only(
+      <def>random1</def>,
+      <ghi>random2</ghi>,
+      <klm>random3</klm>,
+    )
+  }
+
+  it should "pass the remaining input to the next 'collect' parser" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <def>random3</def>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+    type Output = (Seq[String], Seq[String])
+    val pickle: XmlPickle[Output] = for {
+      abcs <- collect(stringNode("abc")).seq[Output] { case (seq1, _) => seq1 }
+      defs <- collect(stringNode("def")).seq[Output] { case (_, seq2) => seq2 }
+    } yield (abcs, defs)
+
+    val (result, remainder) = pickle.parse(input)
+    result should matchPattern { case Success((Seq("test1", "test2", "test3", "test4"), Seq("random1", "random3"))) => }
+    remainder should contain only <ghi>random2</ghi>
+  }
+
+  it should "don't collect any nodes if they all don't satisfy the parser" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <klm>random3</klm>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+    val pickle = collect(stringNode("unknown-node"))
+
+    val (result, remainder) = pickle.parse(input)
+    result should matchPattern { case Success(Seq()) => }
+    remainder shouldBe input
+  }
+
+  it should "convert all input one-by-one and in order according to the given serializer" in {
+    val input = Seq("test1", "test2", "test3", "test4")
+    val pickle = collect(stringNode("abc"))
+
+    inside(pickle.serialize(input, Seq.empty)) {
+      case Success(xml) =>
+        xml should contain inOrderOnly(
+          <abc>test1</abc>,
+          <abc>test2</abc>,
+          <abc>test3</abc>,
+          <abc>test4</abc>,
+        )
+    }
+  }
+
+  it should "compose with other collect operators" in {
+    val input = (Seq("test1", "test2", "test3", "test4"), Seq("random1", "random3"))
+
+    type Output = (Seq[String], Seq[String])
+    val pickle: XmlPickle[Output] = for {
+      abcs <- collect(stringNode("abc")).seq[Output] { case (seq1, _) => seq1 }
+      defs <- collect(stringNode("def")).seq[Output] { case (_, seq2) => seq2 }
+    } yield (abcs, defs)
+
+    inside(pickle.serialize(input, Seq.empty)) {
+      case Success(xml) =>
+        xml should contain inOrderOnly(
+          <abc>test1</abc>,
+          <abc>test2</abc>,
+          <abc>test3</abc>,
+          <abc>test4</abc>,
+          <def>random1</def>,
+          <def>random3</def>,
+        )
+    }
+  }
+
+  it should "convert an empty list into an empty sequence of nodes" in {
+    val input = Seq.empty[String]
+    val pickle = collect(stringNode("abc"))
+
+    pickle.serialize(input, Seq.empty) should matchPattern { case Success(Seq()) => }
+  }
+
+  it should "have sorted a mixed content after first parsing it, and then serializing it again" in {
+    val input = Seq(
+      <abc>test1</abc>,
+      <def>random1</def>,
+      <abc>test2</abc>,
+      <ghi>random2</ghi>,
+      <def>random3</def>,
+      <abc>test3</abc>,
+      <abc>test4</abc>
+    )
+
+    type Output = (Seq[String], Seq[String])
+    val pickle: XmlPickle[Output] = for {
+      abcs <- collect(stringNode("abc")).seq[Output] { case (seq1, _) => seq1 }
+      defs <- collect(stringNode("def")).seq[Output] { case (_, seq2) => seq2 }
+    } yield (abcs, defs)
+
+    val (result, remainder) = pickle.parse(input)
+    inside(result) {
+      case Success(output) =>
+        inside(pickle.serialize(output, remainder)) {
+          case Success(outputXml) =>
+            outputXml should contain inOrderOnly(
+              <abc>test1</abc>,
+              <abc>test2</abc>,
+              <abc>test3</abc>,
+              <abc>test4</abc>,
+              <def>random1</def>,
+              <def>random3</def>,
+              <ghi>random2</ghi>,
+            )
+        }
+    }
+  }
 }

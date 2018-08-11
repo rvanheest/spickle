@@ -3,6 +3,7 @@ package com.github.rvanheest.spickle.parser.xml
 import com.github.rvanheest.spickle.parser.{ Parser, ParserFailedException }
 import shapeless.{ ::, HNil }
 
+import scala.collection.mutable
 import scala.language.postfixOps
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ NamespaceBinding, Node }
@@ -68,5 +69,21 @@ object XmlParser {
 
   def fromAllOptional[T](parser: XmlParser[T]): AllParserBuilder[Option[T] :: HNil] = {
     AllParserBuilder.fromOptional(parser)
+  }
+
+  def collect[T](parser: XmlParser[T]): XmlParser[Seq[T]] = {
+    Parser(xml => {
+      val results = mutable.ListBuffer.newBuilder[T]
+      val notApplicable = mutable.ListBuffer.newBuilder[Node]
+
+      for (x <- xml) {
+        parser.eval(x) match {
+          case Success(result) => results += result
+          case Failure(_) => notApplicable += x
+        }
+      }
+
+      (Success(results.result()), notApplicable.result())
+    })
   }
 }
