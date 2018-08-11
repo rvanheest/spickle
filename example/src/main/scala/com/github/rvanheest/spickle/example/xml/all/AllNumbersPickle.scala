@@ -2,6 +2,7 @@ package com.github.rvanheest.spickle.example.xml.all
 
 import java.nio.file.Paths
 
+import com.github.rvanheest.spickle.example.xml.all.All.Numbers
 import com.github.rvanheest.spickle.pickle.xml.XmlPickle.{ XmlPickle, _ }
 import shapeless.{ ::, Generic, HNil }
 
@@ -25,13 +26,6 @@ object AllNumbersPickleRunner extends App {
 }
 
 object AllNumberPickle {
-
-  case class Numbers(a: Option[Int], b: Option[Int], c: Option[Int], d: Option[Int], e: Int,
-                     f: Int, g: Int, h: Int, i: Int, j: Int,
-                     k: Int, l: Int, m: Int, n: Int, o: Int,
-                     p: Int, q: Int, r: Int, s: Int, t: Int,
-                     u: Int, v: Int, w: Int, x: Int, y: Int,
-                     z: Int)
 
   def pickleNumbers: XmlPickle[Numbers] = {
     branchNode("numbers")(pickleAllNumbers)
