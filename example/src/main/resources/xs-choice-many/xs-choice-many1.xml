@@ -1,0 +1,40 @@
+<mixed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="xs-choice-many.xsd">
+    <e>
+        <a>abcdef</a>
+    </e>
+
+    <a>xyz</a>
+
+    <!-- choice starts here -->
+    <a>a-A</a>
+    <b>b-A</b>
+    <c>
+        <c1>c-c1-A</c1>
+        <c2>c-c2-A</c2>
+    </c>
+    <d1>d1-A</d1>
+    <d2>
+        <d2A>d2-d2A-A</d2A>
+        <d2B>d2-d2B-A</d2B>
+    </d2>
+    <a>a-B</a>
+    <b>b-B</b>
+    <c>
+        <c1>c-c1-B</c1>
+        <c2>c-c2-B</c2>
+    </c>
+    <c>
+        <c1>c-c1-C</c1>
+        <c2>c-c2-C</c2>
+    </c>
+    <d1>d1-B</d1>
+    <d2>
+        <d2A>d2-d2A-B</d2A>
+    </d2>
+    <!-- choice ends here -->
+
+    <f>
+        <a>uvwxyz</a>
+    </f>
+</mixed>
