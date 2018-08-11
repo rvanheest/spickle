@@ -1,6 +1,6 @@
-package com.github.rvanheest.spickle.example.xml.mixed
+package com.github.rvanheest.spickle.example.xml.xsChoiceMany
 
-import com.github.rvanheest.spickle.example.xml.mixed.XsChoiceManySerializer._
+import com.github.rvanheest.spickle.example.xml.xsChoiceMany.XsChoiceManySerializer._
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer.{ XmlSerializer, _ }
 
 import scala.language.postfixOps

@@ -1,4 +1,4 @@
-package com.github.rvanheest.spickle.example.xml.mixed
+package com.github.rvanheest.spickle.example.xml.xsChoiceMany
 
 import java.nio.file.Paths
 
