@@ -9,14 +9,14 @@ class AllSerializerBuilder[MyHList <: HList] private(private val aggregate: XmlS
   def andMandatory[T](serializer: XmlSerializer[T]): AllSerializerBuilder[T :: MyHList] = {
     new AllSerializerBuilder(
       aggregate.contramap[T :: MyHList] { case _ :: tail => tail }
-        .combine(serializer.maybe.contramap[T :: MyHList] { case newItem :: _ => Option(newItem) })
+        .combine(serializer.maybe.contramap { case newItem :: _ => Option(newItem) })
     )
   }
 
   def andOptional[T](serializer: XmlSerializer[T]): AllSerializerBuilder[Option[T] :: MyHList] = {
     new AllSerializerBuilder(
       aggregate.contramap[Option[T] :: MyHList] { case _ :: tail => tail }
-        .combine(serializer.maybe.contramap[Option[T] :: MyHList] { case newItem :: _ => newItem })
+        .combine(serializer.maybe.contramap { case newItem :: _ => newItem })
     )
   }
 

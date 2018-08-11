@@ -10,23 +10,23 @@ trait PersonSerializer {
 
   def serializerNumber(name: String): XmlSerializer[Number] = {
     attribute("addition").maybe.contramap[Number](_.addition)
-      .combine(stringNode(name).contramap[Number](_.number))
+      .combine(stringNode(name).contramap(_.number))
   }
 
   def serializeRealAddress(name: String): XmlSerializer[RealAddress] = {
     branchNode(name)(
       stringNode("street").contramap[RealAddress](_.street)
-        .combine(serializerNumber("number").contramap[RealAddress](_.number))
-        .combine(stringNode("zip-code").contramap[RealAddress](_.zipCode))
-        .combine(stringNode("city").contramap[RealAddress](_.city))
+        .combine(serializerNumber("number").contramap(_.number))
+        .combine(stringNode("zip-code").contramap(_.zipCode))
+        .combine(stringNode("city").contramap(_.city))
     )
   }
 
   def serializeFreepostAddress(name: String): XmlSerializer[FreepostAddress] = {
     branchNode(name)(
       stringNode("freepost-number").contramap[FreepostAddress](_.number)
-        .combine(stringNode("zip-code").contramap[FreepostAddress](_.zipCode))
-        .combine(stringNode("city").contramap[FreepostAddress](_.city))
+        .combine(stringNode("zip-code").contramap(_.zipCode))
+        .combine(stringNode("city").contramap(_.city))
     )
   }
 
@@ -35,14 +35,14 @@ trait PersonSerializer {
   }
 
   def serializePerson: XmlSerializer[Person] = {
-    implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    implicit val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
 
     attribute("age").fromInt.contramap[Person](_.age)
-      .combine(namespaceAttribute("age").fromInt.contramap[Person](_.age))
+      .combine(namespaceAttribute("age").fromInt.contramap(_.age))
       .combine(branchNode("person") {
         stringNode("name").contramap[Person](_.name)
-          .combine(serializeAddress("address").contramap[Person](_.address))
-          .combine(stringNode("mail").maybe.contramap[Person](_.mail))
+          .combine(serializeAddress("address").contramap(_.address))
+          .combine(stringNode("mail").maybe.contramap(_.mail))
       })
   }
 }

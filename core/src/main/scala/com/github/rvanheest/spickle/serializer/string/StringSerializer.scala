@@ -18,7 +18,7 @@ object StringSerializer {
 
   def digit: StringSerializer[Char] = item.satisfy(_.isDigit, a => s"input '$a' is not a digit")
 
-  def number: StringSerializer[String] = digit.atLeastOnce.contramap[String](_.toList)
+  def number: StringSerializer[String] = digit.atLeastOnce.contramap(_.toList)
 
   def lower: StringSerializer[Char] = item.satisfy(_.isLower, a => s"input '$a' is not a lowercase character")
 
@@ -34,11 +34,7 @@ object StringSerializer {
 
   def string(s: String): StringSerializer[String] = {
     s.toList match {
-      case x :: xs =>
-        val headSerializer = char(x).contramap[String](_.head)
-        val tailSerializer = string(xs.mkString).contramap[String](_.tail)
-
-        headSerializer.combine(tailSerializer)
+      case x :: xs => char(x).contramap[String](_.head).combine(string(xs.mkString).contramap(_.tail))
       case Nil => from("")
     }
   }
