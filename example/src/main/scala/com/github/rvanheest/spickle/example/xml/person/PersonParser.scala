@@ -15,30 +15,24 @@ trait PersonParser {
   }
 
   def parseRealAddress(name: String): XmlParser[RealAddress] = {
-    for {
-      // no attributes here
-      address <- branchNode(name) {
-        for {
-          street <- stringNode("street")
-          number <- parseNumber("number")
-          zipCode <- stringNode("zip-code")
-          city <- stringNode("city")
-        } yield RealAddress(street, number, zipCode, city)
-      }
-    } yield address
+    branchNode(name) {
+      for {
+        street <- stringNode("street")
+        number <- parseNumber("number")
+        zipCode <- stringNode("zip-code")
+        city <- stringNode("city")
+      } yield RealAddress(street, number, zipCode, city)
+    }
   }
 
   def parseFreepostAddress(name: String): XmlParser[FreepostAddress] = {
-    for {
-      // no attributes here
-      address <- branchNode(name) {
-        for {
-          number <- stringNode("freepost-number")
-          zipCode <- stringNode("zip-code")
-          city <- stringNode("city")
-        } yield FreepostAddress(number, zipCode, city)
-      }
-    } yield address
+    branchNode(name) {
+      for {
+        number <- stringNode("freepost-number")
+        zipCode <- stringNode("zip-code")
+        city <- stringNode("city")
+      } yield FreepostAddress(number, zipCode, city)
+    }
   }
 
   def parseAddress(name: String): XmlParser[Address] = {
@@ -48,6 +42,7 @@ trait PersonParser {
   def parsePerson: XmlParser[Person] = {
     implicit val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
+      // ALWAYS put the attribute parsing first, BEFORE parsing the node's content
       age <- attribute("age").toInt
       _ <- namespaceAttribute("age").toInt
       p <- branchNode("person") {
