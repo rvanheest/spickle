@@ -15,28 +15,24 @@ trait PersonPickle {
   }
 
   def pickleRealAddress(name: String): XmlPickle[RealAddress] = {
-    for {
-      address <- branchNode(name) {
-        for {
-          street <- stringNode("street").seq[RealAddress](_.street)
-          number <- pickleNumber("number").seq[RealAddress](_.number)
-          zipCode <- stringNode("zip-code").seq[RealAddress](_.zipCode)
-          city <- stringNode("city").seq[RealAddress](_.city)
-        } yield RealAddress(street, number, zipCode, city)
-      }.seqId
-    } yield address
+    branchNode(name) {
+      for {
+        street <- stringNode("street").seq[RealAddress](_.street)
+        number <- pickleNumber("number").seq[RealAddress](_.number)
+        zipCode <- stringNode("zip-code").seq[RealAddress](_.zipCode)
+        city <- stringNode("city").seq[RealAddress](_.city)
+      } yield RealAddress(street, number, zipCode, city)
+    }
   }
 
   def pickleFreepostAddress(name: String): XmlPickle[FreepostAddress] = {
-    for {
-      address <- branchNode(name) {
-        for {
-          number <- stringNode("freepost-number").seq[FreepostAddress](_.number)
-          zipCode <- stringNode("zip-code").seq[FreepostAddress](_.zipCode)
-          city <- stringNode("city").seq[FreepostAddress](_.city)
-        } yield FreepostAddress(number, zipCode, city)
-      }.seqId
-    } yield address
+    branchNode(name) {
+      for {
+        number <- stringNode("freepost-number").seq[FreepostAddress](_.number)
+        zipCode <- stringNode("zip-code").seq[FreepostAddress](_.zipCode)
+        city <- stringNode("city").seq[FreepostAddress](_.city)
+      } yield FreepostAddress(number, zipCode, city)
+    }
   }
 
   def pickleAddress(name: String): XmlPickle[Address] = {
@@ -46,6 +42,7 @@ trait PersonPickle {
   def picklePerson: XmlPickle[Person] = {
     implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
+      // ALWAYS put the attribute pickling first, BEFORE pickling the node's content
       age <- attribute("age").toInt.seq[Person](_.age)
       _ <- namespaceAttribute("age").toInt.seq[Person](_.age)
       p <- branchNode("person") {

@@ -22,9 +22,7 @@ trait BaseBallParser {
       n <- attribute("NAME")
       city <- attribute("CITY")
       team <- branchNode(name) {
-        for {
-          players <- parsePlayer("PLAYER").many
-        } yield Team(n, city, players)
+        parsePlayer("PLAYER").many.map(Team(n, city, _))
       }
     } yield team
   }
@@ -33,9 +31,7 @@ trait BaseBallParser {
     for {
       n <- attribute("NAME")
       division <- branchNode(name) {
-        for {
-          teams <- parseTeam("TEAM").many
-        } yield Division(n, teams)
+        parseTeam("TEAM").many.map(Division(n, _))
       }
     } yield division
   }
@@ -44,9 +40,7 @@ trait BaseBallParser {
     for {
       n <- attribute("NAME")
       league <- branchNode(name) {
-        for {
-          divisions <- parseDivision("DIVISION").many
-        } yield League(n, divisions)
+        parseDivision("DIVISION").many.map(League(n, _))
       }
     } yield league
   }
@@ -55,9 +49,7 @@ trait BaseBallParser {
     for {
       year <- attribute("YEAR").toInt
       season <- branchNode("SEASON") {
-        for {
-          leagues <- parseLeague("LEAGUE").many
-        } yield Season(year, leagues)
+        parseLeague("LEAGUE").many.map(Season(year, _))
       }
     } yield season
   }

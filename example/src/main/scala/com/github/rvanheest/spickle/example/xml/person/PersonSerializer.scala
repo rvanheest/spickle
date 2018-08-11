@@ -37,6 +37,7 @@ trait PersonSerializer {
   def serializePerson: XmlSerializer[Person] = {
     implicit val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
 
+    // ALWAYS put the attribute serializing first, BEFORE serializing the node's content
     attribute("age").fromInt.contramap[Person](_.age)
       .combine(namespaceAttribute("age").fromInt.contramap(_.age))
       .combine(branchNode("person") {
