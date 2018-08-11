@@ -1,5 +1,6 @@
 package com.github.rvanheest.spickle.example.xml.all
 
+import com.github.rvanheest.spickle.example.xml.all.All.Numbers
 import com.github.rvanheest.spickle.example.xml.all.AllNumberSerializer._
 import com.github.rvanheest.spickle.serializer.xml.XmlSerializer._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
