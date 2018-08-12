@@ -18,10 +18,24 @@ object XmlSerializer {
     node(name).contramap(_ => <xml/>.copy(label = name))
   }
 
+  def emptyNode(name: String, namespace: NamespaceBinding): XmlSerializer[Unit] = {
+    node(name, namespace).contramap(_ => <xml/>.copy(label = name, scope = namespace))
+  }
+
   def node(name: String): XmlSerializer[Node] = {
+    node(name, None)
+  }
+
+  def node(name: String, namespace: NamespaceBinding): XmlSerializer[Node] = {
+    node(name, Some(namespace))
+  }
+
+  private def node(name: String, namespace: Option[NamespaceBinding]): XmlSerializer[Node] = {
     Serializer {
-      case (head, tail) if head.label == name => Success(head ++ tail)
-      case (head, _) => Failure(new NoSuchElementException(s"element '$head' does not contain an element with name '$name'"))
+      case (head, tail) if head.label == name && namespace.forall(_.uri == head.namespace) =>
+        Success(head ++ tail)
+      case (head, _) =>
+        Failure(new NoSuchElementException(s"element '$head' does not contain an element with name '$name'"))
     }
   }
 
@@ -29,8 +43,16 @@ object XmlSerializer {
     node(name).contramap(s => <xml>{s}</xml>.copy(label = name))
   }
 
+  def stringNode(name: String, namespace: NamespaceBinding): XmlSerializer[String] = {
+    node(name, namespace).contramap(s => <xml>{s}</xml>.copy(label = name, scope = namespace))
+  }
+
   def branchNode[A](name: String)(serializerA: XmlSerializer[A]): XmlSerializer[A] = {
     Serializer((a, xml) => serializerA.serialize(a, NodeSeq.Empty).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml))
+  }
+
+  def branchNode[A](name: String, namespace: NamespaceBinding)(serializerA: XmlSerializer[A]): XmlSerializer[A] = {
+    Serializer((a, xml) => serializerA.serialize(a, NodeSeq.Empty).map(nodes => <xml>{nodes}</xml>.copy(label = name, scope = namespace) ++ xml))
   }
 
   def attribute(name: String): XmlSerializer[String] = {
