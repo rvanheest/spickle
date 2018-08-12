@@ -24,10 +24,24 @@ object XmlPickle {
     )
   }
 
+  def emptyNode(name: String, namespace: NamespaceBinding): XmlPickle[Unit] = {
+    Pickle(
+      serializer = XmlSerializer.emptyNode(name, namespace),
+      parser = XmlParser.emptyNode(name, namespace)
+    )
+  }
+
   def node(name: String): XmlPickle[Node] = {
     Pickle(
       serializer = XmlSerializer.node(name),
       parser = XmlParser.node(name)
+    )
+  }
+
+  def node(name: String, namespace: NamespaceBinding): XmlPickle[Node] = {
+    Pickle(
+      serializer = XmlSerializer.node(name, namespace),
+      parser = XmlParser.node(name, namespace)
     )
   }
 
@@ -38,10 +52,24 @@ object XmlPickle {
     )
   }
 
+  def stringNode(name: String, namespace: NamespaceBinding): XmlPickle[String] = {
+    Pickle(
+      serializer = XmlSerializer.stringNode(name, namespace),
+      parser = XmlParser.stringNode(name, namespace)
+    )
+  }
+
   def branchNode[A](name: String)(pickleA: XmlPickle[A]): XmlPickle[A] = {
     Pickle(
       serializer = XmlSerializer.branchNode(name)(pickleA.serializer),
       parser = XmlParser.branchNode(name)(pickleA.parser)
+    )
+  }
+
+  def branchNode[A](name: String, namespace: NamespaceBinding)(pickleA: XmlPickle[A]): XmlPickle[A] = {
+    Pickle(
+      serializer = XmlSerializer.branchNode(name, namespace)(pickleA.serializer),
+      parser = XmlParser.branchNode(name, namespace)(pickleA.parser)
     )
   }
 

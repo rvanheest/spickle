@@ -19,23 +19,57 @@ object XmlParser {
       .getOrElse((Failure(ParserFailedException("can't parse an empty node sequence")), Seq.empty)))
   }
 
-  def emptyNode(name: String): XmlParser[Unit] = {
-    XmlParser.node(name).map(_ => ())
+  def node(name: String): XmlParser[Node] = {
+    node(name, None)
   }
 
-  def node(name: String): XmlParser[Node] = {
+  def node(name: String, namespace: NamespaceBinding): XmlParser[Node] = {
+    node(name, Some(namespace))
+  }
+
+  private def node(name: String, namespace: Option[NamespaceBinding]): XmlParser[Node] = {
     nodeItem.transform {
-      case (head, tail) if head.label == name => (Success(head), tail)
-      case (head, tail) => (Failure(ParserFailedException(s"could not find an element with name '$name'")), head +: tail)
+      case (head, tail) if head.label == name && namespace.forall(_.uri == head.namespace) =>
+        (Success(head), tail)
+      case (head, tail) =>
+        (Failure(ParserFailedException(s"could not find an element with name '$name'")), head +: tail)
     }
   }
 
+  def emptyNode(name: String): XmlParser[Unit] = {
+    emptyNode(name, None)
+  }
+
+  def emptyNode(name: String, namespace: NamespaceBinding): XmlParser[Unit] = {
+    emptyNode(name, Some(namespace))
+  }
+
+  private def emptyNode(name: String, namespace: Option[NamespaceBinding]): XmlParser[Unit] = {
+    node(name, namespace).map(_ => ())
+  }
+
   def stringNode(name: String): XmlParser[String] = {
-    node(name).map(_.text)
+    stringNode(name, None)
+  }
+
+  def stringNode(name: String, namespace: NamespaceBinding): XmlParser[String] = {
+    stringNode(name, Some(namespace))
+  }
+
+  private def stringNode(name: String, namespace: Option[NamespaceBinding]): XmlParser[String] = {
+    node(name, namespace).map(_.text)
   }
 
   def branchNode[A](name: String)(subParser: XmlParser[A]): XmlParser[A] = {
-    Parser(node(name).map(_.child).parse(_) match {
+    branchNode(name, None)(subParser)
+  }
+
+  def branchNode[A](name: String, namespace: NamespaceBinding)(subParser: XmlParser[A]): XmlParser[A] = {
+    branchNode(name, Some(namespace))(subParser)
+  }
+
+  def branchNode[A](name: String, namespace: Option[NamespaceBinding])(subParser: XmlParser[A]): XmlParser[A] = {
+    Parser(node(name, namespace).map(_.child).parse(_) match {
       case (Success(childNodes), rest) => (subParser.eval(childNodes), rest)
       case (Failure(e), rest) => (Failure(e), rest)
     })
