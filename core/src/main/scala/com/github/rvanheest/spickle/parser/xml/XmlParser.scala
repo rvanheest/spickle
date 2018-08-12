@@ -54,7 +54,7 @@ object XmlParser {
       .satisfy(_.nonEmpty, _ => s"attribute '$attr' is not found or is empty")
   }
 
-  def namespaceAttribute(attr: String)(implicit namespace: NamespaceBinding): XmlParser[String] = {
+  def attribute(attr: String, namespace: NamespaceBinding): XmlParser[String] = {
     // notice that _.attributes(...) can be null!!!
     attributeItem
       .map(_.attributes(namespace.uri, namespace, attr))

@@ -52,10 +52,10 @@ object XmlPickle {
     )
   }
 
-  def namespaceAttribute(name: String)(implicit namespace: NamespaceBinding): XmlPickle[String] = {
+  def attribute(name: String, namespace: NamespaceBinding): XmlPickle[String] = {
     Pickle(
-      serializer = XmlSerializer.namespaceAttribute(name),
-      parser = XmlParser.namespaceAttribute(name)
+      serializer = XmlSerializer.attribute(name, namespace),
+      parser = XmlParser.attribute(name, namespace)
     )
   }
 
