@@ -44,7 +44,7 @@ object XmlSerializer {
     })
   }
 
-  def namespaceAttribute(name: String)(implicit namespace: NamespaceBinding): XmlSerializer[String] = {
+  def attribute(name: String, namespace: NamespaceBinding): XmlSerializer[String] = {
     Serializer((s: String, xml: Seq[Node]) => Try {
       xml.headOption map {
         case elem: Elem => elem % new PrefixedAttribute(namespace.prefix, name, s, Null) ++ xml.tail

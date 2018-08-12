@@ -40,11 +40,11 @@ trait PersonParser {
   }
 
   def parsePerson: XmlParser[Person] = {
-    implicit val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
       // ALWAYS put the attribute parsing first, BEFORE parsing the node's content
       age <- attribute("age").toInt
-      _ <- namespaceAttribute("age").toInt
+      _ <- attribute("age", xlinkNamespace).toInt
       p <- branchNode("person") {
         for {
           pName <- stringNode("name")

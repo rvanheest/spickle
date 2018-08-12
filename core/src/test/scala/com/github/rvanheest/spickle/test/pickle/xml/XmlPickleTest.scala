@@ -100,8 +100,8 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val input = <foo hello="abc">bar</foo>
     val output = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").serialize("simple", input) should matchPattern {
+    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    attribute("type", ns).serialize("simple", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
@@ -111,22 +111,22 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside {
     val input = <foo xlink:type="abc" hello="abc">bar</foo>
     val output = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").serialize("simple", input) should matchPattern {
+    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    attribute("type", ns).serialize("simple", input) should matchPattern {
       case Success(Seq(`output`)) =>
     }
   }
 
   it should "fail when the state is empty" in {
-    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").serialize("simple") should matchPattern {
+    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    attribute("type", ns).serialize("simple") should matchPattern {
       case Failure(SerializerFailedException("Cannot add an attribute with name 'xlink:type' to an empty node sequence")) =>
     }
   }
 
   it should "fail if the first node in the state is not an element" in {
-    implicit val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    namespaceAttribute("type").serialize("simple", Comment("hello")) should matchPattern {
+    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    attribute("type", ns).serialize("simple", Comment("hello")) should matchPattern {
       case Failure(SerializerFailedException("Can only add an attribute with name 'xlink:type' to elements: <!--hello-->")) =>
     }
   }

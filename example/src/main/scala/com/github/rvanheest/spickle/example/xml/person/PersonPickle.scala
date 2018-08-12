@@ -40,11 +40,11 @@ trait PersonPickle {
   }
 
   def picklePerson: XmlPickle[Person] = {
-    implicit val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+    val xlinkNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     for {
       // ALWAYS put the attribute pickling first, BEFORE pickling the node's content
       age <- attribute("age").toInt.seq[Person](_.age)
-      _ <- namespaceAttribute("age").toInt.seq[Person](_.age)
+      _ <- attribute("age", xlinkNamespace).toInt.seq[Person](_.age)
       p <- branchNode("person") {
         for {
           pName <- stringNode("name").seq[Person](_.name)

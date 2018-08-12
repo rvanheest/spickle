@@ -39,7 +39,7 @@ trait PersonSerializer {
 
     // ALWAYS put the attribute serializing first, BEFORE serializing the node's content
     attribute("age").fromInt.contramap[Person](_.age)
-      .combine(namespaceAttribute("age").fromInt.contramap(_.age))
+      .combine(attribute("age").fromInt.contramap(_.age))
       .combine(branchNode("person") {
         stringNode("name").contramap[Person](_.name)
           .combine(serializeAddress("address").contramap(_.address))
