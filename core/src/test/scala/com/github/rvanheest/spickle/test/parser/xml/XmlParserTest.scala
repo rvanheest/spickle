@@ -15,7 +15,6 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
   private val foo = <foo>test</foo>
   private val fooPf = <xlink:foo>test</xlink:foo>
-  private val fooNS = <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">test</xlink:foo>
   private val bar = <bar/>
   private val barNS = <xlink:bar xmlns:xlink="http://www.w3.org/1999/xlink"/>
   private val baz = <baz>hello world</baz>

@@ -201,6 +201,34 @@ class XmlSerializerTest extends FlatSpec with Matchers with Inside with XmlEqual
     }
   }
 
+  "withNamespace" should "add a namespace to the node serialized with the given serializer" in {
+    val expectedResult = <foo xmlns:xlink="http://www.w3.org/1999/xlink"><xlink:bar>test1</xlink:bar><xlink:bar>test2</xlink:bar></foo>
+
+    val barSerializer = stringNode("bar", xlinkNamespace)
+    val fooSerializer = branchNode("foo")(barSerializer.many)
+    val serializer = withNamespace(xlinkNamespace)(fooSerializer)
+
+    serializer.serialize(Seq("test1", "test2")) should equalTrimmed(expectedResult)
+  }
+
+  it should "add a namespace to a subnode in the tree" in {
+    val expectedResult = <foo><xlink:bar xmlns:xlink="http://www.w3.org/1999/xlink">test1</xlink:bar><xlink:bar xmlns:xlink="http://www.w3.org/1999/xlink">test2</xlink:bar></foo>
+
+    val barSerializer = withNamespace(xlinkNamespace)(stringNode("bar", xlinkNamespace))
+    val serializer = branchNode("foo")(barSerializer.many)
+
+    serializer.serialize(Seq("test1", "test2")) should equalTrimmed(expectedResult)
+  }
+
+  it should "add a namespace to every node in the sequence produced by the given serializer" in {
+    val expectedResult = <foo><xlink:bar xmlns:xlink="http://www.w3.org/1999/xlink">test1</xlink:bar><xlink:bar xmlns:xlink="http://www.w3.org/1999/xlink">test2</xlink:bar></foo>
+
+    val barSerializer = stringNode("bar", xlinkNamespace)
+    val serializer = branchNode("foo")(withNamespace(xlinkNamespace)(barSerializer.many))
+
+    serializer.serialize(Seq("test1", "test2")) should equalTrimmed(expectedResult)
+  }
+
   "collect" should "convert all input one-by-one and in order according to the given serializer" in {
     val input = Seq("test1", "test2", "test3", "test4")
     val serializer = collect(stringNode("abc"))
