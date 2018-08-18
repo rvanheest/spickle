@@ -1,0 +1,18 @@
+<note xmlns="http://www.github.com/rvanheest/spickle/example/namespace"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:dcterms="http://purl.org/dc/terms/"
+      xsi:noNamespaceSchemaLocation="schema.xsd">
+
+    <dc:title>dc-title1</dc:title>
+
+    <dcterms:title>dcterms-title1</dcterms:title>
+
+    <dcterms:description>dcterms-description1</dcterms:description>
+
+    <dc:title>dc-title2</dc:title>
+    <dc:title>dc-title3</dc:title>
+
+    <dcterms:description>dcterms-description2</dcterms:description>
+    <dcterms:description>dcterms-description3</dcterms:description>
+</note>
