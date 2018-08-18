@@ -29,10 +29,13 @@ object XmlParser {
 
   private def node(name: String, namespace: Option[NamespaceBinding]): XmlParser[Node] = {
     nodeItem.transform {
-      case (head, tail) if head.label == name && namespace.forall(_.uri == head.namespace) =>
+      case (head, tail) if head.label == name && namespace.forall(ns => head.prefix == ns.prefix) =>
         (Success(head), tail)
       case (head, tail) =>
-        (Failure(ParserFailedException(s"could not find an element with name '$name'")), head +: tail)
+        val msg = namespace
+          .map(ns => s"could not find an element with name '$name' and namespace '${ns.toString.trim}'")
+          .getOrElse(s"could not find an element with name '$name'")
+        (Failure(ParserFailedException(msg)), head +: tail)
     }
   }
 
@@ -68,7 +71,7 @@ object XmlParser {
     branchNode(name, Some(namespace))(subParser)
   }
 
-  def branchNode[A](name: String, namespace: Option[NamespaceBinding])(subParser: XmlParser[A]): XmlParser[A] = {
+  private def branchNode[A](name: String, namespace: Option[NamespaceBinding])(subParser: XmlParser[A]): XmlParser[A] = {
     Parser(node(name, namespace).map(_.child).parse(_) match {
       case (Success(childNodes), rest) => (subParser.eval(childNodes), rest)
       case (Failure(e), rest) => (Failure(e), rest)

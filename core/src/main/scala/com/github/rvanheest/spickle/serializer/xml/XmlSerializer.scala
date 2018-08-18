@@ -15,11 +15,11 @@ object XmlSerializer {
   }
 
   def emptyNode(name: String): XmlSerializer[Unit] = {
-    node(name).contramap(_ => <xml/>.copy(label = name))
+    node(name).contramap(_ => <xml/>.copy(label = name, minimizeEmpty = true))
   }
 
   def emptyNode(name: String, namespace: NamespaceBinding): XmlSerializer[Unit] = {
-    node(name, namespace).contramap(_ => <xml/>.copy(label = name, scope = namespace))
+    node(name, namespace).contramap(_ => <xml/>.copy(prefix = namespace.prefix, label = name, minimizeEmpty = true))
   }
 
   def node(name: String): XmlSerializer[Node] = {
@@ -32,27 +32,32 @@ object XmlSerializer {
 
   private def node(name: String, namespace: Option[NamespaceBinding]): XmlSerializer[Node] = {
     Serializer {
-      case (head, tail) if head.label == name && namespace.forall(_.uri == head.namespace) =>
+      case (head, tail) if head.label == name && namespace.forall(_.prefix == head.prefix) =>
         Success(head ++ tail)
       case (head, _) =>
-        Failure(new NoSuchElementException(s"element '$head' does not contain an element with name '$name'"))
+        val msg = namespace
+          .map(ns => s"element '$head' does not contain an element with name '$name' and namespace '${ ns.toString().trim }'")
+          .getOrElse(s"element '$head' does not contain an element with name '$name'")
+        Failure(new NoSuchElementException(msg))
     }
   }
 
   def stringNode(name: String): XmlSerializer[String] = {
-    node(name).contramap(s => <xml>{s}</xml>.copy(label = name))
+    node(name).contramap(s => <xml>{s}</xml>.copy(label = name, minimizeEmpty = true))
   }
 
   def stringNode(name: String, namespace: NamespaceBinding): XmlSerializer[String] = {
-    node(name, namespace).contramap(s => <xml>{s}</xml>.copy(label = name, scope = namespace))
+    node(name, namespace).contramap(s => <xml>{s}</xml>.copy(prefix = namespace.prefix, label = name, minimizeEmpty = true))
   }
 
   def branchNode[A](name: String)(serializerA: XmlSerializer[A]): XmlSerializer[A] = {
-    Serializer((a, xml) => serializerA.serialize(a, NodeSeq.Empty).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml))
+    Serializer((a, xml) => serializerA.serialize(a).map(nodes => <xml>{nodes}</xml>.copy(label = name) ++ xml))
   }
 
   def branchNode[A](name: String, namespace: NamespaceBinding)(serializerA: XmlSerializer[A]): XmlSerializer[A] = {
-    Serializer((a, xml) => serializerA.serialize(a, NodeSeq.Empty).map(nodes => <xml>{nodes}</xml>.copy(label = name, scope = namespace) ++ xml))
+    Serializer((a, xml) => serializerA.serialize(a).map(nodes => {
+      <xml>{nodes}</xml>.copy(prefix = namespace.prefix, label = name) ++ xml
+    }))
   }
 
   def attribute(name: String): XmlSerializer[String] = {
