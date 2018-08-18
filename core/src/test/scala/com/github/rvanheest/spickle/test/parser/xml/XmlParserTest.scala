@@ -313,7 +313,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
   it should "fail when the parent parser is not fulfilled" in {
     val input = Utility.trim(
-    // @formatter:off
+      // @formatter:off
       <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">
         <bar>hello</bar>
         <bar>world</bar>

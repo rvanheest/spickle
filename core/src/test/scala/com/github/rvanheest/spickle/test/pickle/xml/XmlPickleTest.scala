@@ -251,7 +251,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     inside(fooPickle.parse(input)) {
       case (Success(parsedResult), remainder) =>
         remainder shouldBe empty
-        parsedResult shouldBe (Some("blabla"), Some("albalb"))
+        parsedResult shouldBe(Some("blabla"), Some("albalb"))
 
         val resultXml = fooPickle.serialize(parsedResult, remainder)
         resultXml should equalTrimmed(input)
@@ -272,7 +272,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     inside(fooPickle.parse(input)) {
       case (Success(parsedResult), remainder) =>
         remainder shouldBe empty
-        parsedResult shouldBe (Some("blabla"), "albalb")
+        parsedResult shouldBe(Some("blabla"), "albalb")
 
         val resultXml = fooPickle.serialize(parsedResult, remainder)
         resultXml should equalTrimmed(input)
@@ -293,7 +293,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     inside(fooPickle.parse(input)) {
       case (Success(parsedResult), remainder) =>
         remainder shouldBe empty
-        parsedResult shouldBe (None, "albalb")
+        parsedResult shouldBe(None, "albalb")
 
         val resultXml = fooPickle.serialize(parsedResult, remainder)
         resultXml should equalTrimmed(input)
@@ -314,7 +314,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     inside(fooPickle.parse(input)) {
       case (Success(parsedResult), remainder) =>
         remainder shouldBe empty
-        parsedResult shouldBe ("blabla", "albalb")
+        parsedResult shouldBe("blabla", "albalb")
 
         val resultXml = fooPickle.serialize(parsedResult, remainder)
         resultXml should equalTrimmed(input)
@@ -335,7 +335,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     inside(fooPickle.parse(input)) {
       case (Success(parsedResult), remainder) =>
         remainder shouldBe empty
-        parsedResult shouldBe (None, None)
+        parsedResult shouldBe(None, None)
 
         val resultXml = fooPickle.serialize(parsedResult, remainder)
         resultXml should equalTrimmed(input)
@@ -405,7 +405,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     inside(pickle.parse(input)) {
       case (Success(parsedResult), remainder) =>
         remainder should contain only <ghi>random2</ghi>
-        parsedResult shouldBe (Seq("test1", "test2", "test3", "test4"), Seq("random1", "random3"))
+        parsedResult shouldBe(Seq("test1", "test2", "test3", "test4"), Seq("random1", "random3"))
 
         val resultXml = pickle.serialize(parsedResult, remainder)
         resultXml should equalTrimmed(output)
