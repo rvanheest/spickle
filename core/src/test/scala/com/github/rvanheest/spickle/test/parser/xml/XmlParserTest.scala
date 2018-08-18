@@ -11,8 +11,13 @@ import scala.xml.{ NamespaceBinding, TopScope, Utility }
 
 class XmlParserTest extends FlatSpec with Matchers with Inside {
 
+  private val xlinkNamespace: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
+
   private val foo = <foo>test</foo>
+  private val fooPf = <xlink:foo>test</xlink:foo>
+  private val fooNS = <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">test</xlink:foo>
   private val bar = <bar/>
+  private val barNS = <xlink:bar xmlns:xlink="http://www.w3.org/1999/xlink"/>
   private val baz = <baz>hello world</baz>
 
   "node" should "consume the first node in the sequence and return it if its label is equal to the given String" in {
@@ -21,7 +26,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  it should "consume the first node in the sequence and return an error when the label does not match the given String" in {
+  it should "not consume the first node in the sequence and return an error when the label does not match the given String" in {
     val expectedMsg = "could not find an element with name 'bar'"
     node("bar").parse(Seq(foo, bar, baz)) should matchPattern {
       case (Failure(ParserFailedException(`expectedMsg`)), Seq(`foo`, `bar`, `baz`)) =>
@@ -31,6 +36,80 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   it should "return an error when the input is empty" in {
     val expectedMsg = "can't parse an empty node sequence"
     node("foo").parse(Seq.empty) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Nil) =>
+    }
+  }
+
+  "node with namespace" should "consume the first node in the sequence and return it if its label and namespace are equal to the given String and NamespaceBinding" in {
+    node("foo", xlinkNamespace).parse(Seq(fooPf, bar, baz)) should matchPattern {
+      case (Success(`fooPf`), Seq(`bar`, `baz`)) =>
+    }
+  }
+
+  it should "not consume the first node in the sequence and return an error when the label does not match the given String" in {
+    val expectedMsg = "could not find an element with name 'bar' and namespace 'xmlns:xlink=\"http://www.w3.org/1999/xlink\"'"
+    node("bar", xlinkNamespace).parse(Seq(fooPf, bar, baz)) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Seq(`fooPf`, `bar`, `baz`)) =>
+    }
+  }
+
+  it should "not consume the first node in the sequence and return an error when the namespace does not match the given NamespaceBinding" in {
+    val expectedMsg = "could not find an element with name 'foo' and namespace 'xmlns:xlink=\"http://www.w3.org/1999/xlink\"'"
+    node("foo", xlinkNamespace).parse(Seq(<other:foo>test</other:foo>, bar, baz)) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Seq(<other:foo>test</other:foo>, `bar`, `baz`)) =>
+    }
+  }
+
+  it should "return an error when the input is empty" in {
+    val expectedMsg = "can't parse an empty node sequence"
+    node("foo", xlinkNamespace).parse(Seq.empty) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Nil) =>
+    }
+  }
+
+  "emptyNode" should "consume a the first node in the sequence if it has the given label and return Unit" in {
+    emptyNode("foo").parse(Seq(foo, bar, baz)) should matchPattern {
+      case (Success(()), Seq(`bar`, `baz`)) =>
+    }
+  }
+
+  it should "not consume the first node in the sequence and return an error when the label does not match the given String" in {
+    val expectedMsg = "could not find an element with name 'bar'"
+    emptyNode("bar").parse(Seq(foo, bar, baz)) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Seq(`foo`, `bar`, `baz`)) =>
+    }
+  }
+
+  it should "return an error when the input is empty" in {
+    val expectedMsg = "can't parse an empty node sequence"
+    emptyNode("foo").parse(Seq.empty) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Nil) =>
+    }
+  }
+
+  "emptyNode with namespace" should "consume the first node in the sequence if it has the given label and namespace and return Unit" in {
+    emptyNode("foo", xlinkNamespace).parse(Seq(fooPf, bar, baz)) should matchPattern {
+      case (Success(()), Seq(`bar`, `baz`)) =>
+    }
+  }
+
+  it should "not consume the first node in the sequence and return an error when the label does not match the given String" in {
+    val expectedMsg = "could not find an element with name 'bar' and namespace 'xmlns:xlink=\"http://www.w3.org/1999/xlink\"'"
+    emptyNode("bar", xlinkNamespace).parse(Seq(fooPf, bar, baz)) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Seq(`fooPf`, `bar`, `baz`)) =>
+    }
+  }
+
+  it should "not consume the first node in the sequence and return an error when the namespace does not match the given NamespaceBinding" in {
+    val expectedMsg = "could not find an element with name 'foo' and namespace 'xmlns:xlink=\"http://www.w3.org/1999/xlink\"'"
+    emptyNode("foo", xlinkNamespace).parse(Seq(<other:foo>test</other:foo>, bar, baz)) should matchPattern {
+      case (Failure(ParserFailedException(`expectedMsg`)), Seq(<other:foo>test</other:foo>, `bar`, `baz`)) =>
+    }
+  }
+
+  it should "return an error when the input is empty" in {
+    val expectedMsg = "can't parse an empty node sequence"
+    emptyNode("foo", xlinkNamespace).parse(Seq.empty) should matchPattern {
       case (Failure(ParserFailedException(`expectedMsg`)), Nil) =>
     }
   }
@@ -51,6 +130,27 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
   it should "consume the first node in the sequence if it has the given label and return a concattenated String of all subnodes when this node is not a 'leave'" in {
     // @formatter:off
     stringNode("qux").parse(Seq(<qux><foo>hello</foo><bar>world</bar></qux>, foo)) should matchPattern {
+    // @formatter:on
+      case (Success("helloworld"), Seq(`foo`)) =>
+    }
+  }
+
+  "stringNode with namespace" should "consume the first node in the sequence if it has the given label and return the text that is in it" in {
+    val expectedOutput = fooPf.text
+    stringNode("foo", xlinkNamespace).parse(Seq(fooPf, bar, baz)) should matchPattern {
+      case (Success(`expectedOutput`), Seq(`bar`, `baz`)) =>
+    }
+  }
+
+  it should "consume the first node in the sequence if it has the given label and return an empty String if the node has no content" in {
+    stringNode("bar", xlinkNamespace).parse(Seq(barNS, baz)) should matchPattern {
+      case (Success(""), Seq(`baz`)) =>
+    }
+  }
+
+  it should "consume the first node in the sequence if it has the given label and return a concattenated String of all subnodes when this node is not a 'leave'" in {
+    // @formatter:off
+    stringNode("qux", xlinkNamespace).parse(Seq(<xlink:qux xmlns:xlink="http://www.w3.org/1999/xlink"><foo>hello</foo><bar>world</bar></xlink:qux>, foo)) should matchPattern {
     // @formatter:on
       case (Success("helloworld"), Seq(`foo`)) =>
     }
@@ -123,6 +223,115 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
+  it should "fail when the parent parser is not fulfilled" in {
+    val input = Utility.trim(
+      // @formatter:off
+      <foo>
+        <bar>hello</bar>
+        <bar>world</bar>
+        <baz>!</baz>
+      </foo>
+      // @formatter:on
+    )
+
+    val subParser = for {
+      bars <- stringNode("bar").many
+      baz <- stringNode("baz")
+    } yield bars.mkString(" ") + baz
+
+    branchNode("not-foo")(subParser).parse(input) should matchPattern {
+      case (Failure(ParserFailedException("could not find an element with name 'not-foo'")), Seq(`input`)) =>
+    }
+  }
+
+  "branchNode with namespace" should "apply the subParser to the content of the first node in the input if it matches the given name" in {
+    val input =
+    // @formatter:off
+      <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">
+        <bar>hello</bar>
+        <bar>world</bar>
+        <baz>!</baz>
+      </xlink:foo>
+      // @formatter:on
+
+    val subParser = for {
+      bars <- stringNode("bar").many
+      baz <- stringNode("baz")
+    } yield bars.mkString(" ") + baz
+
+    branchNode("foo", xlinkNamespace)(subParser).parse(Utility.trim(input)) should matchPattern {
+      case (Success("hello world!"), Nil) =>
+    }
+  }
+
+  it should "apply the subParser to the content of the first node in the input if it matches the given name and leave any unparsed content from the subparser in the rest-input of the outer parser" in {
+    val input =
+    // @formatter:off
+      <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">
+        <bar>hello</bar>
+        <bar>world</bar>
+        <baz>!</baz>
+      </xlink:foo>
+      // @formatter:on
+
+    val subParser = for {
+      bars <- stringNode("bar").many
+    } yield bars.mkString(" ")
+
+    branchNode("foo", xlinkNamespace)(subParser).parse(Utility.trim(input)) should matchPattern {
+      case (Success("hello world"), Nil) =>
+    }
+  }
+
+  it should "apply the subParser to the content of the first node in the input if it matches the given name and leave any unparsed content from the outer parser in the rest-input of the outer parser" in {
+    val input = Seq(
+      // @formatter:off
+      <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">
+        <bar>hello</bar>
+        <bar>world</bar>
+        <baz>!</baz>
+      </xlink:foo>,
+      <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">
+        <bar>hello2</bar>
+        <bar>world2</bar>
+        <baz>!2</baz>
+      </xlink:foo>
+      // @formatter:on
+    )
+
+    val subParser = for {
+      bars <- stringNode("bar").many
+    } yield bars.mkString(" ")
+
+    branchNode("foo", xlinkNamespace)(subParser).parse(input map Utility.trim) should matchPattern {
+      // @formatter:off
+      case (Success("hello world"), Seq(<foo><bar>hello2</bar><bar>world2</bar><baz>!2</baz></foo>)) =>
+      // flattened structure in second foo is intentional; this was flattened in the Utility.trim above
+      // @formatter:on
+    }
+  }
+
+  it should "fail when the parent parser is not fulfilled" in {
+    val input = Utility.trim(
+    // @formatter:off
+      <xlink:foo xmlns:xlink="http://www.w3.org/1999/xlink">
+        <bar>hello</bar>
+        <bar>world</bar>
+        <baz>!</baz>
+      </xlink:foo>
+      // @formatter:on
+    )
+
+    val subParser = for {
+      bars <- stringNode("bar").many
+      baz <- stringNode("baz")
+    } yield bars.mkString(" ") + baz
+
+    branchNode("not-foo", xlinkNamespace)(subParser).parse(input) should matchPattern {
+      case (Failure(ParserFailedException("could not find an element with name 'not-foo' and namespace 'xmlns:xlink=\"http://www.w3.org/1999/xlink\"'")), Seq(`input`)) =>
+    }
+  }
+
   "attribute" should "read the attribute with a given name from the first node in the input and keep the attribute in the remaining node" in {
     // @formatter:off
     val input = <foo test="123" hello="abc">bar</foo>
@@ -159,12 +368,11 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     }
   }
 
-  "namespaceAttribute" should "parse a namespaced attribute" in {
+  "attribute with namespace" should "parse a namespaced attribute" in {
     // @formatter:off
     val input = <foo xlink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
-    attribute("type", ns).parse(input) should matchPattern {
+    attribute("type", xlinkNamespace).parse(input) should matchPattern {
       case (Success("simple"), `input`) =>
     }
   }
@@ -173,10 +381,9 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo ylink:type="simple" hello="abc">bar</foo>
     // @formatter:on
-    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     val expectedMsg = "attribute 'type' with namespace ' xmlns:xlink=\"http://www.w3.org/1999/xlink\"' is not found"
 
-    attribute("type", ns).parse(input) should matchPattern {
+    attribute("type", xlinkNamespace).parse(input) should matchPattern {
       case (Failure(ParserFailedException(`expectedMsg`)), `input`) =>
     }
   }
@@ -185,10 +392,9 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     // @formatter:off
     val input = <foo hello="abc">bar</foo>
     // @formatter:on
-    val ns: NamespaceBinding = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", TopScope)
     val expectedMsg = "attribute 'type' with namespace ' xmlns:xlink=\"http://www.w3.org/1999/xlink\"' is not found"
 
-    attribute("type", ns).parse(input) should matchPattern {
+    attribute("type", xlinkNamespace).parse(input) should matchPattern {
       case (Failure(ParserFailedException(`expectedMsg`)), `input`) =>
     }
   }
@@ -393,7 +599,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
 
     val (result, remainder) = parser.parse(input)
     result should matchPattern { case Success(Seq("test1", "test2", "test3", "test4")) => }
-    remainder should contain only (
+    remainder should contain only(
       <def>random1</def>,
       <ghi>random2</ghi>,
       <klm>random3</klm>,
