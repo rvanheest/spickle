@@ -33,7 +33,7 @@ object XmlParser {
         (Success(head), tail)
       case (head, tail) =>
         val msg = namespace
-          .map(ns => s"could not find an element with name '$name' and namespace '${ns.toString.trim}'")
+          .map(ns => s"could not find an element with name '$name' and namespace '${ ns.toString.trim }'")
           .getOrElse(s"could not find an element with name '$name'")
         (Failure(ParserFailedException(msg)), head +: tail)
     }
