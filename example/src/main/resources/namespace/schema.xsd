@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:dcterms="http://purl.org/dc/terms/"
+           xmlns:dc="http://purl.org/dc/elements/1.1/"
+           targetNamespace="http://www.github.com/rvanheest/spickle/example/namespace"
+           elementFormDefault="qualified">
+
+    <!-- =================================================================================== -->
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/03/xml.xsd"/>
+    <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="http://dublincore.org/schemas/xmls/qdc/dc.xsd"/>
+    <xs:import namespace="http://purl.org/dc/terms/" schemaLocation="http://dublincore.org/schemas/xmls/qdc/dcterms.xsd"/>
+    <!-- =================================================================================== -->
+
+    <xs:element name="note">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="dc:title"/>
+                <xs:element ref="dcterms:title"/>
+                <xs:element ref="dcterms:description"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
