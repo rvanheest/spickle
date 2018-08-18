@@ -391,11 +391,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
       <abc>test1</abc>,
       <abc>test2</abc>,
       <abc>test3</abc>,
-      <abc>test4</abc>
+      <abc>test4</abc>,
       <def>random1</def>,
       <ghi>random2</ghi>,
       <klm>random3</klm>,
-    ).flatten
+    )
     val pickle = collect(stringNode("abc"))
 
     inside(pickle.parse(input)) {
@@ -426,11 +426,11 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
       <abc>test1</abc>,
       <abc>test2</abc>,
       <abc>test3</abc>,
-      <abc>test4</abc>
+      <abc>test4</abc>,
       <def>random1</def>,
       <def>random3</def>,
       <ghi>random2</ghi>,
-    ).flatten
+    )
     type Output = (Seq[String], Seq[String])
     val pickle: XmlPickle[Output] = for {
       abcs <- collect(stringNode("abc")).seq[Output] { case (seq1, _) => seq1 }
