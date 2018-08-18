@@ -82,6 +82,13 @@ object XmlSerializer {
     })
   }
 
+  def withNamespace[A](namespace: NamespaceBinding)(serializerA: XmlSerializer[A]): XmlSerializer[A] = {
+    Serializer((a, xml) => serializerA.serialize(a).map(_.map {
+      case e: Elem => e.copy(scope = namespace)
+      case other => other
+    } ++ xml))
+  }
+
   def fromAllMandatory[T](serializer: XmlSerializer[T]): AllSerializerBuilder[T :: HNil] = {
     AllSerializerBuilder.fromMandatory(serializer)
   }

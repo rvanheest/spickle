@@ -237,6 +237,41 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
     }
   }
 
+  "withNamespace" should "pickle a namespace to an xml structure" in {
+    val dcNamespace = NamespaceBinding("dc", "http://purl.org/dc/elements/1.1/", TopScope)
+    val totalNamespace = NamespaceBinding("xlink", "http://www.w3.org/1999/xlink", NamespaceBinding("dc", "http://purl.org/dc/elements/1.1/", TopScope))
+    val input = Utility.trim(
+      // @formatter:off
+      <xlink:foo xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <bar>hello</bar>
+        <bar>world</bar>
+        <dc:baz>!</dc:baz>
+      </xlink:foo>
+    // @formatter:on
+    )
+    val output = Foo(Seq(Bar("hello"), Bar("world")), Baz("!"))
+
+    def barPickle: XmlPickle[Bar] = stringNode("bar").seq[Bar](_.s).map(Bar)
+
+    def bazPickle: XmlPickle[Baz] = stringNode("baz", dcNamespace).seq[Baz](_.s).map(Baz)
+
+    def subPickle: XmlPickle[Foo] = for {
+      bars <- barPickle.many.seq[Foo](_.bars)
+      baz <- bazPickle.seq[Foo](_.baz)
+    } yield Foo(bars, baz)
+
+    val pickle = withNamespace(totalNamespace)(branchNode("foo", xlinkNamespace)(subPickle))
+
+    inside(pickle.parse(input)) {
+      case (Success(parsedResult), remainder) =>
+        remainder shouldBe empty
+        parsedResult shouldBe output
+
+        val resultXml = pickle.serialize(parsedResult, remainder)
+        resultXml should equalTrimmed(input)
+    }
+  }
+
   "all2" should "turn an all of (present) optional objects to xml" in {
     val abcPickle = stringNode("abc")
     val defPickle = stringNode("def")

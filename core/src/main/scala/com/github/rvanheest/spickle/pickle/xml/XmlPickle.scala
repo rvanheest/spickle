@@ -87,6 +87,13 @@ object XmlPickle {
     )
   }
 
+  def withNamespace[A](namespace: NamespaceBinding)(pickle: XmlPickle[A]): XmlPickle[A] = {
+    Pickle(
+      serializer = XmlSerializer.withNamespace(namespace)(pickle.serializer),
+      parser = pickle.parser // nothing to do here
+    )
+  }
+
   def fromAllMandatory[T](parser: XmlPickle[T]): AllPickleBuilder[T :: HNil] = {
     AllPickleBuilder.fromMandatory(parser)
   }
