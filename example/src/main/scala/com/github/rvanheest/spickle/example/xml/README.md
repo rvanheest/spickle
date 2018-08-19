@@ -8,4 +8,5 @@ This package contains a number of examples on how to use the `XmlParser`, `XmlSe
 * **[xsChoiceMany](./xsChoiceMany)** demonstrates how to handle an [`<xs:choice minOccurs="0" maxOccurs="unbounded"/>`](https://www.w3schools.com/xml/el_choice.asp)
   element using the `collect` operator. See also the related XML and XSD files in the [resources](../../../../../../../resources/xs-choice-many).
 * **[namespace](./namespace)** shows how to add [namespaces](https://www.w3schools.com/xml/xml_namespaces.asp)
-  and namespace prefixes to nodes, and how to include schema references in the XML structure.
+  and namespace prefixes to nodes, and how to include schema references in the XML structure. See
+  also the related XML and XSD files in the [resources](../../../../../../../resources/namespace).
