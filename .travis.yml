@@ -16,7 +16,7 @@ cache:
     - $HOME/.sbt
 
 script:
-  - sbt clean coverage test
+  - sbt clean compile test:compile coverage test
 
 after_success:
   - sbt coverageReport

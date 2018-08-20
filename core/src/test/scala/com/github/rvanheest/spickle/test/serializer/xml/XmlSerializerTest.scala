@@ -239,7 +239,7 @@ class XmlSerializerTest extends FlatSpec with Matchers with Inside with XmlEqual
           <abc>test1</abc>,
           <abc>test2</abc>,
           <abc>test3</abc>,
-          <abc>test4</abc>,
+          <abc>test4</abc>
         )
     }
   }
@@ -260,7 +260,7 @@ class XmlSerializerTest extends FlatSpec with Matchers with Inside with XmlEqual
           <abc>test3</abc>,
           <abc>test4</abc>,
           <def>random1</def>,
-          <def>random3</def>,
+          <def>random3</def>
         )
     }
   }
