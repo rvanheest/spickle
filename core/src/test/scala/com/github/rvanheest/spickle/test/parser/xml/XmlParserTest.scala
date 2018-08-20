@@ -601,7 +601,7 @@ class XmlParserTest extends FlatSpec with Matchers with Inside {
     remainder should contain only(
       <def>random1</def>,
       <ghi>random2</ghi>,
-      <klm>random3</klm>,
+      <klm>random3</klm>
     )
   }
 

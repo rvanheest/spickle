@@ -394,7 +394,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
       <abc>test4</abc>,
       <def>random1</def>,
       <ghi>random2</ghi>,
-      <klm>random3</klm>,
+      <klm>random3</klm>
     )
     val pickle = collect(stringNode("abc"))
 
@@ -403,7 +403,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
         remainder should contain only(
           <def>random1</def>,
           <ghi>random2</ghi>,
-          <klm>random3</klm>,
+          <klm>random3</klm>
         )
         parsedResult shouldBe Seq("test1", "test2", "test3", "test4")
 
@@ -429,7 +429,7 @@ class XmlPickleTest extends FlatSpec with Matchers with Inside with XmlEquality 
       <abc>test4</abc>,
       <def>random1</def>,
       <def>random3</def>,
-      <ghi>random2</ghi>,
+      <ghi>random2</ghi>
     )
     type Output = (Seq[String], Seq[String])
     val pickle: XmlPickle[Output] = for {
